@@ -92,6 +92,7 @@ const store = {
   },
   posts: files,
   highlights: highlightCovers,
+  stories: [],
   followers: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",

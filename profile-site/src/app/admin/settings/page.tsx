@@ -110,6 +110,7 @@ export default function AdminSettingsPage() {
       <nav className="admin-nav">
         <Link href="/admin">{t.overview}</Link>
         <Link href="/admin/posts">{t.posts}</Link>
+        <Link href="/admin/stories">{t.stories}</Link>
         <Link href="/admin/settings" className="active">
           {t.settings}
         </Link>

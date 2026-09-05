@@ -101,6 +101,18 @@ export type Dictionary = {
   sendComment: string;
   noComments: string;
   verifiedLabel: string;
+  stories: string;
+  yourStory: string;
+  viewStory: string;
+  storyLoginRequired: string;
+  storyLoginCta: string;
+  noStories: string;
+  storyViewers: string;
+  publishStory: string;
+  publishStoryLede: string;
+  activeStories: string;
+  noStoryViewers: string;
+  expires: string;
 };
 
 const ar: Dictionary = {
@@ -193,6 +205,18 @@ const ar: Dictionary = {
   sendComment: "إرسال",
   noComments: "لا تعليقات بعد.",
   verifiedLabel: "حساب موثّق",
+  stories: "الستوري",
+  yourStory: "الستوري",
+  viewStory: "عرض الستوري",
+  storyLoginRequired: "فعّل Google أولاً، ثم سجّل الدخول عبر Google لمشاهدة الستوري.",
+  storyLoginCta: "تسجيل الدخول عبر Google للمشاهدة",
+  noStories: "لا ستوري نشطة حالياً.",
+  storyViewers: "المشاهدون",
+  publishStory: "نشر ستوري",
+  publishStoryLede: "الستوري تختفي بعد 24 ساعة. من يشاهدها عبر Google يظهر اسمه هنا.",
+  activeStories: "الستوري النشطة",
+  noStoryViewers: "لا مشاهدين بعد.",
+  expires: "تنتهي",
 };
 
 const en: Dictionary = {
@@ -285,6 +309,18 @@ const en: Dictionary = {
   sendComment: "Send",
   noComments: "No comments yet.",
   verifiedLabel: "Verified account",
+  stories: "Stories",
+  yourStory: "Story",
+  viewStory: "View story",
+  storyLoginRequired: "Enable Google first, then sign in with Google to view the story.",
+  storyLoginCta: "Sign in with Google to view",
+  noStories: "No active stories right now.",
+  storyViewers: "Viewers",
+  publishStory: "Publish story",
+  publishStoryLede: "Stories disappear after 24 hours. People who view via Google appear here by name.",
+  activeStories: "Active stories",
+  noStoryViewers: "No viewers yet.",
+  expires: "Expires",
 };
 
 const fr: Dictionary = {

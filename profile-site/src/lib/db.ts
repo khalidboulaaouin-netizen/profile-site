@@ -1,10 +1,20 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
-import type { Store, Profile, Post, Highlight, SiteSettings, Follower } from "./types";
+import type {
+  Store,
+  Profile,
+  Post,
+  Highlight,
+  SiteSettings,
+  Follower,
+  Story,
+  StoryViewer,
+} from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "store.json");
+const STORY_TTL_MS = 24 * 60 * 60 * 1000;
 
 const defaultStore = (): Store => ({
   profile: {
@@ -19,22 +29,11 @@ const defaultStore = (): Store => ({
   },
   posts: [],
   highlights: [
-    {
-      id: randomUUID(),
-      title: "لحظات",
-      coverUrl: "",
-    },
-    {
-      id: randomUUID(),
-      title: "سفر",
-      coverUrl: "",
-    },
-    {
-      id: randomUUID(),
-      title: "أعمال",
-      coverUrl: "",
-    },
+    { id: randomUUID(), title: "لحظات", coverUrl: "" },
+    { id: randomUUID(), title: "سفر", coverUrl: "" },
+    { id: randomUUID(), title: "أعمال", coverUrl: "" },
   ],
+  stories: [],
   followers: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",
@@ -61,10 +60,26 @@ function normalizePost(post: Post): Post {
   };
 }
 
+function normalizeStory(story: Story): Story {
+  return {
+    ...story,
+    caption: story.caption || "",
+    viewers: Array.isArray(story.viewers) ? story.viewers : [],
+  };
+}
+
+function isStoryActive(story: Story, now = Date.now()) {
+  return new Date(story.expiresAt).getTime() > now;
+}
+
 function normalizeStore(store: Store): Store {
+  const now = Date.now();
   return {
     ...store,
     posts: (store.posts || []).map(normalizePost),
+    stories: (store.stories || [])
+      .map(normalizeStory)
+      .filter((story) => isStoryActive(story, now)),
     settings: {
       ...defaultStore().settings,
       ...store.settings,
@@ -81,7 +96,13 @@ async function ensureStore(): Promise<Store> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   try {
     const raw = await fs.readFile(STORE_PATH, "utf8");
-    return normalizeStore(JSON.parse(raw) as Store);
+    const normalized = normalizeStore(JSON.parse(raw) as Store);
+    // Persist cleanup of expired stories when needed
+    const parsed = JSON.parse(raw) as Store;
+    if ((parsed.stories || []).length !== normalized.stories.length) {
+      await fs.writeFile(STORE_PATH, JSON.stringify(normalized, null, 2), "utf8");
+    }
+    return normalized;
   } catch {
     const store = defaultStore();
     await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
@@ -267,4 +288,75 @@ export async function unfollowByGoogleId(googleId: string): Promise<boolean> {
 export async function isFollowing(googleId: string): Promise<boolean> {
   const store = await readStore();
   return store.followers.some((f) => f.googleId === googleId);
+}
+
+export async function listActiveStories(): Promise<Story[]> {
+  const store = await readStore();
+  return store.stories;
+}
+
+export async function addStory(input: {
+  imageUrl: string;
+  caption?: string;
+}): Promise<Story> {
+  const store = await readStore();
+  const now = Date.now();
+  const story: Story = {
+    id: randomUUID(),
+    imageUrl: input.imageUrl,
+    caption: (input.caption || "").trim().slice(0, 200),
+    createdAt: new Date(now).toISOString(),
+    expiresAt: new Date(now + STORY_TTL_MS).toISOString(),
+    viewers: [],
+  };
+  store.stories = [story, ...(store.stories || [])];
+  await writeStore(store);
+  return story;
+}
+
+export async function deleteStory(id: string): Promise<boolean> {
+  const store = await readStore();
+  const before = store.stories.length;
+  store.stories = store.stories.filter((s) => s.id !== id);
+  await writeStore(store);
+  return store.stories.length < before;
+}
+
+export async function recordStoryView(input: {
+  storyId: string;
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+}): Promise<{ story: Story; alreadyViewed: boolean } | null> {
+  const store = await readStore();
+  const idx = store.stories.findIndex((s) => s.id === input.storyId);
+  if (idx === -1) return null;
+
+  const story = normalizeStory(store.stories[idx]);
+  if (!isStoryActive(story)) return null;
+
+  const existing = story.viewers.find((v) => v.googleId === input.googleId);
+  if (existing) {
+    return { story, alreadyViewed: true };
+  }
+
+  const viewer: StoryViewer = {
+    googleId: input.googleId,
+    name: input.name || "Viewer",
+    email: input.email || "",
+    image: input.image || "",
+    viewedAt: new Date().toISOString(),
+  };
+  story.viewers = [viewer, ...story.viewers];
+  store.stories[idx] = story;
+  await writeStore(store);
+  return { story, alreadyViewed: false };
+}
+
+export async function getStoryViewers(storyId: string): Promise<StoryViewer[] | null> {
+  const store = await readStore();
+  const story = store.stories.find((s) => s.id === storyId);
+  if (!story) return null;
+  return normalizeStory(story).viewers;
 }

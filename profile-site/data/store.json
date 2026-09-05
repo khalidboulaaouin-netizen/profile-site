@@ -11,62 +11,55 @@
   },
   "posts": [
     {
-      "id": "590ed24e-1535-4bcf-b2f6-9cdc50d60539",
+      "id": "e83ac13c-f84d-40f1-a94a-a912bcd0294c",
       "imageUrl": "/uploads/demo-1.svg",
       "caption": "لحظة صباح هادئة",
-      "createdAt": "2026-09-05T02:41:37.767Z",
-      "likes": 0,
+      "createdAt": "2026-09-05T02:47:45.382Z",
+      "likes": 12,
       "likedBy": [],
-      "comments": [
-        {
-          "id": "f56fd8c0-1dcc-4080-89c9-8870237df0ad",
-          "authorName": "Sara",
-          "text": "تعليق تجريبي جميل",
-          "createdAt": "2026-09-05T02:42:04.938Z"
-        }
-      ]
+      "comments": []
     },
     {
-      "id": "bffe8b94-9398-4624-8e54-2bbfa2f6dc2e",
+      "id": "5feb4d40-b4c7-48f0-848d-c7782ca64042",
       "imageUrl": "/uploads/demo-2.svg",
       "caption": "تفاصيل يومية",
-      "createdAt": "2026-09-04T02:41:37.767Z",
+      "createdAt": "2026-09-04T02:47:45.383Z",
       "likes": 11,
       "likedBy": [],
       "comments": []
     },
     {
-      "id": "6adfc4f5-3f57-4758-b172-044e1decfbda",
+      "id": "8b582786-3503-4b45-8066-fc2b0af246c3",
       "imageUrl": "/uploads/demo-3.svg",
       "caption": "ضوء المساء",
-      "createdAt": "2026-09-03T02:41:37.767Z",
+      "createdAt": "2026-09-03T02:47:45.383Z",
       "likes": 10,
       "likedBy": [],
       "comments": []
     },
     {
-      "id": "0668dcb7-7727-4e8d-a38f-031edc245f80",
+      "id": "accab542-7ad6-4b6f-919c-9a3675b4817f",
       "imageUrl": "/uploads/demo-4.svg",
       "caption": "من مساحة العمل",
-      "createdAt": "2026-09-02T02:41:37.767Z",
+      "createdAt": "2026-09-02T02:47:45.383Z",
       "likes": 9,
       "likedBy": [],
       "comments": []
     },
     {
-      "id": "bdc2b522-0120-45a9-ba6e-90f9841b2ca0",
+      "id": "c074d0e1-4239-4ed2-9f72-df9e78995469",
       "imageUrl": "/uploads/demo-5.svg",
       "caption": "مشهد عابر",
-      "createdAt": "2026-09-01T02:41:37.767Z",
+      "createdAt": "2026-09-01T02:47:45.383Z",
       "likes": 8,
       "likedBy": [],
       "comments": []
     },
     {
-      "id": "1bb19fed-c5a3-4b0f-8b4f-b7309179d626",
+      "id": "7c12ffa7-201a-4ff7-8d2f-6d0b3f92c97d",
       "imageUrl": "/uploads/demo-6.svg",
       "caption": "نهاية الأسبوع",
-      "createdAt": "2026-08-31T02:41:37.767Z",
+      "createdAt": "2026-08-31T02:47:45.383Z",
       "likes": 7,
       "likedBy": [],
       "comments": []
@@ -74,19 +67,37 @@
   ],
   "highlights": [
     {
-      "id": "18378fed-7de8-4874-b9b9-4c652a6db714",
+      "id": "b0592ecf-6db9-4208-bbcd-ecddd48b8697",
       "title": "لحظات",
       "coverUrl": "/uploads/highlight-1.svg"
     },
     {
-      "id": "f84e7900-d14c-40e9-b44d-7b4d82213465",
+      "id": "71425706-1ab4-4738-87a5-57fdc0e6c37b",
       "title": "سفر",
       "coverUrl": "/uploads/highlight-2.svg"
     },
     {
-      "id": "71cfb177-2a39-47e7-906c-2d857342a850",
+      "id": "51ea08a0-e31a-4a6c-bebe-5ed5b1c7b5b3",
       "title": "أعمال",
       "coverUrl": "/uploads/highlight-3.svg"
+    }
+  ],
+  "stories": [
+    {
+      "id": "bdfe81e4-99a8-4074-84e1-5618943f0ca6",
+      "imageUrl": "/uploads/demo-2.svg",
+      "caption": "اختبار واجهة",
+      "createdAt": "2026-09-05T02:51:05.448Z",
+      "expiresAt": "2026-09-06T02:51:05.448Z",
+      "viewers": [
+        {
+          "googleId": "viewer-demo",
+          "name": "متابع تجريبي",
+          "email": "viewer@example.com",
+          "image": "",
+          "viewedAt": "2026-09-05T02:51:05.449Z"
+        }
+      ]
     }
   ],
   "followers": [],

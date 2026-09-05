@@ -32,6 +32,23 @@ export type Highlight = {
   coverUrl: string;
 };
 
+export type StoryViewer = {
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  viewedAt: string;
+};
+
+export type Story = {
+  id: string;
+  imageUrl: string;
+  caption: string;
+  createdAt: string;
+  expiresAt: string;
+  viewers: StoryViewer[];
+};
+
 export type Follower = {
   id: string;
   googleId: string;
@@ -64,6 +81,7 @@ export type Store = {
   profile: Profile;
   posts: Post[];
   highlights: Highlight[];
+  stories: Story[];
   followers: Follower[];
   settings: SiteSettings;
 };

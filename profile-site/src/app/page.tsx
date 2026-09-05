@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { FollowButton } from "@/components/FollowButton";
 import { PostGrid } from "@/components/PostGrid";
 import { HighlightsRow, ProfileHeader } from "@/components/ProfileHeader";
+import { StoryRing } from "@/components/StoryRing";
 import { readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
 
@@ -51,6 +53,10 @@ export default async function HomePage() {
         }}
         followSlot={<FollowButton labels={t} locale={locale} />}
       />
+
+      <Suspense fallback={null}>
+        <StoryRing labels={t} />
+      </Suspense>
 
       <HighlightsRow highlights={store.highlights} label={t.highlights} />
 

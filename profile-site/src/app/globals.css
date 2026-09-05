@@ -888,7 +888,7 @@ button.highlight.has-stories .highlight-cover {
 }
 
 .modal-sheet.modal-article {
-  grid-template-columns: 0.75fr 1.25fr;
+  grid-template-columns: 1fr;
 }
 
 .article-cover-fallback {
@@ -955,7 +955,7 @@ button.highlight.has-stories .highlight-cover {
 }
 
 .modal-sheet.modal-reel {
-  grid-template-columns: 0.9fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .reel-player {
@@ -1059,29 +1059,101 @@ button.highlight.has-stories .highlight-cover {
 }
 
 .modal-sheet {
-  width: min(860px, 100%);
-  max-height: 90vh;
+  width: min(520px, 100%);
+  max-height: 92vh;
   overflow: auto;
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr;
   background: var(--bg-elevated);
   border-radius: 20px;
   box-shadow: var(--shadow);
   animation: rise 0.35s ease both;
 }
 
+.modal-sheet.modal-ig {
+  grid-template-columns: 1fr;
+}
+
+.modal-media {
+  width: 100%;
+  background: #0b1216;
+  display: grid;
+  place-items: center;
+}
+
+.modal-media img,
 .modal-sheet img {
   width: 100%;
-  height: 100%;
-  min-height: 280px;
-  object-fit: cover;
+  height: auto;
+  max-height: 70vh;
+  min-height: 220px;
+  object-fit: contain;
+  display: block;
+  background: #0b1216;
+}
+
+.modal-media .reel-player,
+.reel-player {
+  width: 100%;
+  max-height: 70vh;
+  min-height: 240px;
+  object-fit: contain;
+  background: #0b1216;
 }
 
 .modal-body {
-  padding: 1.25rem;
+  padding: 0.85rem 1rem 1.15rem;
   display: flex;
   flex-direction: column;
+  gap: 0.7rem;
+}
+
+.ig-actions {
+  display: flex;
+  align-items: center;
   gap: 0.85rem;
+  padding-top: 0.15rem;
+}
+
+.ig-action {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.55rem;
+  line-height: 1;
+  padding: 0.1rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ig-action.is-liked {
+  color: #e31b54;
+}
+
+.ig-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ig-close {
+  margin-inline-start: auto;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+.ig-likes {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.ig-caption {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .modal-body time {

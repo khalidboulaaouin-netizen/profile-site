@@ -215,43 +215,82 @@ export function PostGrid({
       {active && (
         <div className="modal-backdrop" onClick={() => setActiveId(null)} role="presentation">
           <article
-            className={`modal-sheet ${active.mediaType === "video" ? "modal-reel" : ""} ${
+            className={`modal-sheet modal-ig ${active.mediaType === "video" ? "modal-reel" : ""} ${
               active.mediaType === "text" ? "modal-article" : ""
             }`}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
           >
-            {active.mediaType === "text" ? (
-              active.imageUrl ? (
+            <div className="modal-media">
+              {active.mediaType === "text" ? (
+                active.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={active.imageUrl} alt={active.caption || labels.postAlt} />
+                ) : (
+                  <div className="article-cover-fallback" aria-hidden>
+                    ✎
+                  </div>
+                )
+              ) : active.mediaType === "video" ? (
+                <video
+                  className="reel-player"
+                  src={active.imageUrl}
+                  controls
+                  playsInline
+                  autoPlay
+                  preload="metadata"
+                />
+              ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={active.imageUrl} alt={active.caption || labels.postAlt} />
-              ) : (
-                <div className="article-cover-fallback" aria-hidden>
-                  ✎
-                </div>
-              )
-            ) : active.mediaType === "video" ? (
-              <video
-                className="reel-player"
-                src={active.imageUrl}
-                controls
-                playsInline
-                autoPlay
-                preload="metadata"
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={active.imageUrl} alt={active.caption || labels.postAlt} />
-            )}
+              )}
+            </div>
+
             <div className="modal-body">
+              {(enableLikes || enableComments) && (
+                <div className="ig-actions">
+                  {enableLikes && (
+                    <button
+                      type="button"
+                      className={`ig-action ${liked ? "is-liked" : ""}`}
+                      onClick={onLike}
+                      disabled={pending || !visitorId}
+                      aria-label={liked ? labels.unlike : labels.like}
+                    >
+                      {liked ? "♥" : "♡"}
+                    </button>
+                  )}
+                  {enableComments && (
+                    <a className="ig-action" href="#post-comments" aria-label={labels.comments}>
+                      💬
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="ig-action ig-close"
+                    onClick={() => setActiveId(null)}
+                    aria-label={labels.close}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {enableLikes && (
+                <p className="ig-likes">
+                  <strong>{active.likes || 0}</strong> {labels.likesCount}
+                </p>
+              )}
+
               {active.mediaType === "video" && (
                 <span className="reel-badge">{labels.reelBadge}</span>
               )}
               {active.mediaType === "text" && (
                 <span className="article-badge">{labels.articleBadge}</span>
               )}
-              <p className={active.mediaType === "text" ? "article-body" : undefined}>
+
+              <p className={active.mediaType === "text" ? "article-body ig-caption" : "ig-caption"}>
                 {active.caption || labels.noCaption}
               </p>
               <time dateTime={active.createdAt}>
@@ -262,24 +301,8 @@ export function PostGrid({
                 })}
               </time>
 
-              {enableLikes && (
-                <div className="like-row">
-                  <button
-                    type="button"
-                    className={`btn ${liked ? "btn-primary" : "btn-ghost"} like-btn`}
-                    onClick={onLike}
-                    disabled={pending || !visitorId}
-                  >
-                    {liked ? "♥" : "♡"} {liked ? labels.unlike : labels.like}
-                  </button>
-                  <span>
-                    {active.likes || 0} {labels.likesCount}
-                  </span>
-                </div>
-              )}
-
               {enableComments && (
-                <div className="comments-box">
+                <div className="comments-box" id="post-comments">
                   <h3>{labels.comments}</h3>
                   <div className="comments-list">
                     {(active.comments || []).length === 0 && (
@@ -334,10 +357,6 @@ export function PostGrid({
                   </form>
                 </div>
               )}
-
-              <button type="button" className="btn btn-ghost" onClick={() => setActiveId(null)}>
-                {labels.close}
-              </button>
             </div>
           </article>
         </div>

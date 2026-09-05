@@ -15,6 +15,7 @@ type PublicStory = {
   expiresAt: string;
   viewerCount: number;
   viewedByMe: boolean;
+  mediaType?: "image" | "video";
 };
 
 type StoriesResponse = {
@@ -129,11 +130,18 @@ export function StoryRing({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, stories.length]);
 
+  const isVideo = active?.mediaType === "video" || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(active?.imageUrl || "");
+
   useEffect(() => {
     if (!open || !active) return;
+    // Videos advance on ended (with a long safety timeout). Images use the fixed timer.
+    if (isVideo) {
+      const timer = window.setTimeout(goNext, 60_000);
+      return () => window.clearTimeout(timer);
+    }
     const timer = window.setTimeout(goNext, STORY_MS);
     return () => window.clearTimeout(timer);
-  }, [open, active?.id, stories.length]);
+  }, [open, active?.id, stories.length, isVideo]);
 
   if (!stories.length) return null;
 
@@ -171,8 +179,20 @@ export function StoryRing({
             ))}
           </div>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={active.imageUrl} alt={active.caption || labels.stories} className="story-media" />
+          {isVideo ? (
+            <video
+              key={active.id}
+              className="story-media"
+              src={active.imageUrl}
+              autoPlay
+              playsInline
+              controls={false}
+              onEnded={goNext}
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={active.imageUrl} alt={active.caption || labels.stories} className="story-media" />
+          )}
 
           <div className="story-top">
             <div className="story-owner">

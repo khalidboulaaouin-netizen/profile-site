@@ -109,6 +109,12 @@ export type Dictionary = {
   storySavedToHighlight: string;
   highlightItemsCount: string;
   chooseHighlight: string;
+  deleteHighlight: string;
+  deleteHighlightConfirm: string;
+  deleteHighlightItemConfirm: string;
+  manageHighlightsLede: string;
+  noHighlightsYet: string;
+  storyPublished: string;
   followersTitle: string;
   followersLede: string;
   noFollowers: string;
@@ -383,6 +389,12 @@ const ar: Dictionary = {
   storySavedToHighlight: "تم حفظ الستوري تحت البايو في أبرز اللحظات.",
   highlightItemsCount: "ستوري محفوظة",
   chooseHighlight: "اختر مجموعة",
+  deleteHighlight: "حذف المجموعة",
+  deleteHighlightConfirm: "حذف مجموعة أبرز اللحظات بالكامل؟",
+  deleteHighlightItemConfirm: "حذف هذه اللقطة من أبرز اللحظات؟",
+  manageHighlightsLede: "الستوريات القديمة المحفوظة تحت البايو. يمكنك حذف لقطة أو حذف المجموعة كاملة.",
+  noHighlightsYet: "لا توجد أبرز لحظات بعد. احفظ ستوري من القائمة أعلاه.",
+  storyPublished: "تم نشر الستوري.",
   followersTitle: "المتابعون عبر Google",
   followersLede: "هؤلاء زوّار ضغطوا «متابعة عبر Google» فقط. لا يوجد تسجيل حساب مستقل لهم.",
   noFollowers: "لا متابعين بعد. فعّل Google OAuth ثم شارك رابط صفحتك.",
@@ -660,6 +672,12 @@ const en: Dictionary = {
   storySavedToHighlight: "Story saved under the bio in highlights.",
   highlightItemsCount: "saved stories",
   chooseHighlight: "Choose a highlight",
+  deleteHighlight: "Delete highlight",
+  deleteHighlightConfirm: "Delete this entire highlight?",
+  deleteHighlightItemConfirm: "Remove this slide from the highlight?",
+  manageHighlightsLede: "Older stories saved under the bio. Delete a slide or the whole highlight.",
+  noHighlightsYet: "No highlights yet. Save a story from the list above.",
+  storyPublished: "Story published.",
   followersTitle: "Google followers",
   followersLede: "These visitors only pressed “Follow with Google”. They have no separate account.",
   noFollowers: "No followers yet. Enable Google OAuth, then share your page link.",
@@ -840,6 +858,12 @@ const en: Dictionary = {
 
 const fr: Dictionary = {
   ...en,
+  deleteHighlight: "Supprimer la une",
+  deleteHighlightConfirm: "Supprimer toute cette une ?",
+  deleteHighlightItemConfirm: "Retirer cette diapositive ?",
+  manageHighlightsLede: "Anciennes stories sous la bio. Supprimez une diapositive ou toute la une.",
+  noHighlightsYet: "Pas encore de une. Enregistrez une story ci-dessus.",
+  storyPublished: "Story publiée.",
   posts: "Publications",
   followers: "Abonnés",
   following: "Abonnements",
@@ -945,6 +969,12 @@ const fr: Dictionary = {
 
 const es: Dictionary = {
   ...en,
+  deleteHighlight: "Eliminar destacado",
+  deleteHighlightConfirm: "¿Eliminar todo este destacado?",
+  deleteHighlightItemConfirm: "¿Quitar esta diapositiva del destacado?",
+  manageHighlightsLede: "Historias antiguas bajo la bio. Elimina una diapositiva o todo el destacado.",
+  noHighlightsYet: "Aún no hay destacados. Guarda una historia de la lista.",
+  storyPublished: "Historia publicada.",
   posts: "Publicaciones",
   followers: "Seguidores",
   following: "Siguiendo",
@@ -1049,6 +1079,12 @@ const es: Dictionary = {
 
 const de: Dictionary = {
   ...en,
+  deleteHighlight: "Highlight löschen",
+  deleteHighlightConfirm: "Dieses Highlight komplett löschen?",
+  deleteHighlightItemConfirm: "Diese Folie aus dem Highlight entfernen?",
+  manageHighlightsLede: "Ältere Stories unter der Bio. Lösche eine Folie oder das ganze Highlight.",
+  noHighlightsYet: "Noch keine Highlights. Speichere eine Story aus der Liste.",
+  storyPublished: "Story veröffentlicht.",
   posts: "Beiträge",
   followers: "Follower",
   following: "Folgt",
@@ -1153,6 +1189,12 @@ const de: Dictionary = {
 
 const tr: Dictionary = {
   ...en,
+  deleteHighlight: "Öne çıkanı sil",
+  deleteHighlightConfirm: "Bu öne çıkanı tamamen sil?",
+  deleteHighlightItemConfirm: "Bu slaytı öne çıkandan kaldır?",
+  manageHighlightsLede: "Biyografi altındaki eski hikayeler. Bir slaytı veya tüm öne çıkanı sil.",
+  noHighlightsYet: "Henüz öne çıkan yok. Yukarıdaki listeden bir hikaye kaydet.",
+  storyPublished: "Hikaye yayınlandı.",
   posts: "Gönderiler",
   followers: "Takipçiler",
   following: "Takip",

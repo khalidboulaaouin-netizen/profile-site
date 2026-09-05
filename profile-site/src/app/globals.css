@@ -333,6 +333,10 @@ textarea {
   animation: fade-in 0.25s ease both;
 }
 
+video.story-media {
+  background: #000;
+}
+
 .story-media {
   width: min(480px, 100%);
   height: min(85vh, 860px);
@@ -650,6 +654,13 @@ button.highlight.has-stories .highlight-cover {
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+
+.highlight-cover video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .highlight-cover img {

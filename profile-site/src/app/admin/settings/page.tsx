@@ -661,9 +661,10 @@ export default function AdminSettingsPage() {
 
       <div className="panel" style={{ marginTop: "1rem" }}>
         <h2>{t.highlightsSection}</h2>
+        <p className="lede">{t.manageHighlightsLede}</p>
         <form className="form-stack" onSubmit={saveHighlights}>
           {highlights.map((h, idx) => (
-            <div key={h.id} className="form-stack" style={{ paddingBottom: "0.75rem" }}>
+            <div key={h.id} className="form-stack" style={{ paddingBottom: "0.75rem", borderBottom: "1px solid var(--border, #eee)" }}>
               <label>
                 {t.highlightTitle}
                 <input
@@ -693,8 +694,68 @@ export default function AdminSettingsPage() {
               <p className="lede" style={{ marginTop: "-0.35rem" }}>
                 {(h.items?.length || 0)} {t.highlightItemsCount}
               </p>
+              <div className="form-stack" style={{ gap: "0.35rem" }}>
+                {(h.items || []).map((item) => (
+                  <div
+                    key={item.id}
+                    style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
+                  >
+                    {item.mediaType === "video" || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(item.imageUrl) ? (
+                      <video
+                        src={item.imageUrl}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8 }}
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.imageUrl}
+                        alt=""
+                        style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8 }}
+                      />
+                    )}
+                    <span style={{ flex: 1, fontSize: "0.85rem" }}>
+                      {(item.caption || "").slice(0, 48) || item.mediaType || "—"}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      disabled={busy}
+                      onClick={() => {
+                        if (!confirm(t.deleteHighlightItemConfirm || t.delete)) return;
+                        const next = highlights.map((hl) => {
+                          if (hl.id !== h.id) return hl;
+                          const items = (hl.items || []).filter((i) => i.id !== item.id);
+                          const coverUrl =
+                            hl.coverUrl && items.some((i) => i.imageUrl === hl.coverUrl)
+                              ? hl.coverUrl
+                              : items[0]?.imageUrl || "";
+                          return { ...hl, items, coverUrl };
+                        });
+                        setHighlights(next);
+                      }}
+                    >
+                      {t.delete}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={busy}
+                onClick={() => {
+                  if (!confirm(t.deleteHighlightConfirm || t.delete)) return;
+                  setHighlights(highlights.filter((hl) => hl.id !== h.id));
+                }}
+              >
+                {t.deleteHighlight}
+              </button>
             </div>
           ))}
+          {!highlights.length && <p className="lede">{t.noHighlightsYet}</p>}
           <button className="btn btn-primary" type="submit" disabled={busy}>
             {t.saveHighlights}
           </button>

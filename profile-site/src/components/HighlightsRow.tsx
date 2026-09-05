@@ -24,19 +24,28 @@ export function HighlightsRow({
   const slides = active?.items || [];
   const slide = slides[index] || null;
 
+  const isVideo =
+    slide?.mediaType === "video" || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(slide?.imageUrl || "");
+
+  function goNextSlide() {
+    setIndex((i) => {
+      if (i >= slides.length - 1) {
+        setActiveId(null);
+        return 0;
+      }
+      return i + 1;
+    });
+  }
+
   useEffect(() => {
     if (!active || !slide) return;
-    const timer = window.setTimeout(() => {
-      setIndex((i) => {
-        if (i >= slides.length - 1) {
-          setActiveId(null);
-          return 0;
-        }
-        return i + 1;
-      });
-    }, SLIDE_MS);
+    if (isVideo) {
+      const timer = window.setTimeout(goNextSlide, 60_000);
+      return () => window.clearTimeout(timer);
+    }
+    const timer = window.setTimeout(goNextSlide, SLIDE_MS);
     return () => window.clearTimeout(timer);
-  }, [activeId, index, slides.length, slide?.id]);
+  }, [activeId, index, slides.length, slide?.id, isVideo]);
 
   useEffect(() => {
     if (!activeId) return;
@@ -76,8 +85,18 @@ export function HighlightsRow({
           >
             <div className="highlight-cover">
               {item.coverUrl || item.items?.[0]?.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.coverUrl || item.items[0].imageUrl} alt="" />
+                /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(item.coverUrl || item.items[0].imageUrl) ||
+                item.items?.[0]?.mediaType === "video" ? (
+                  <video
+                    src={item.coverUrl || item.items[0].imageUrl}
+                    muted
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.coverUrl || item.items[0].imageUrl} alt="" />
+                )
               ) : (
                 <span>{item.title.slice(0, 1)}</span>
               )}
@@ -106,8 +125,20 @@ export function HighlightsRow({
                 {closeLabel}
               </button>
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={slide.imageUrl} alt={slide.caption || active.title} className="story-media" />
+            {isVideo ? (
+              <video
+                key={slide.id}
+                className="story-media"
+                src={slide.imageUrl}
+                autoPlay
+                playsInline
+                controls={false}
+                onEnded={goNextSlide}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={slide.imageUrl} alt={slide.caption || active.title} className="story-media" />
+            )}
             {slide.caption ? <p className="story-caption">{slide.caption}</p> : null}
             <button
               type="button"
@@ -119,15 +150,7 @@ export function HighlightsRow({
               type="button"
               className="story-tap next"
               aria-label="next"
-              onClick={() =>
-                setIndex((i) => {
-                  if (i >= slides.length - 1) {
-                    setActiveId(null);
-                    return 0;
-                  }
-                  return i + 1;
-                })
-              }
+              onClick={goNextSlide}
             />
           </div>
         </div>

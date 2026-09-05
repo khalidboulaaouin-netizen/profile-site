@@ -114,11 +114,21 @@ function normalizePost(post: Post): Post {
   };
 }
 
+function inferMediaType(
+  url: string,
+  explicit?: string | null,
+): "image" | "video" {
+  if (explicit === "video" || explicit === "image") return explicit;
+  if (/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(url || "")) return "video";
+  return "image";
+}
+
 function normalizeStory(story: Story): Story {
   return {
     ...story,
     caption: story.caption || "",
     viewers: Array.isArray(story.viewers) ? story.viewers : [],
+    mediaType: inferMediaType(story.imageUrl, (story as Story).mediaType),
   };
 }
 
@@ -133,6 +143,7 @@ function normalizeHighlight(highlight: Highlight): Highlight {
           imageUrl: item.imageUrl,
           caption: item.caption || "",
           createdAt: item.createdAt || new Date().toISOString(),
+          mediaType: inferMediaType(item.imageUrl, item.mediaType),
         }))
       : [],
   };
@@ -556,59 +567,73 @@ export async function saveStoryToHighlight(input: {
   highlightId?: string;
   newTitle?: string;
 }): Promise<Highlight | null> {
-  const store = await readStore();
-  const story = store.stories.find((s) => s.id === input.storyId);
-  if (!story) return null;
+  let result: Highlight | null = null;
+  await mutateStore((draft) => {
+    const story = draft.stories.find((s) => s.id === input.storyId);
+    if (!story) return;
+    const normalizedStory = normalizeStory(story);
 
-  const item = {
-    id: randomUUID(),
-    imageUrl: story.imageUrl,
-    caption: story.caption || "",
-    createdAt: story.createdAt,
-  };
-
-  let highlight: Highlight | null = null;
-
-  if (input.highlightId) {
-    const idx = store.highlights.findIndex((h) => h.id === input.highlightId);
-    if (idx === -1) return null;
-    highlight = normalizeHighlight(store.highlights[idx]);
-    const already = highlight.items.some((i) => i.imageUrl === item.imageUrl);
-    if (!already) {
-      highlight.items = [...highlight.items, item];
-    }
-    if (!highlight.coverUrl) highlight.coverUrl = item.imageUrl;
-    store.highlights[idx] = highlight;
-  } else {
-    const title = (input.newTitle || "لحظات").trim().slice(0, 40) || "لحظات";
-    highlight = {
+    const item = {
       id: randomUUID(),
-      title,
-      coverUrl: item.imageUrl,
-      items: [item],
+      imageUrl: normalizedStory.imageUrl,
+      caption: normalizedStory.caption || "",
+      createdAt: normalizedStory.createdAt,
+      mediaType: normalizedStory.mediaType,
     };
-    store.highlights = [...store.highlights, highlight];
-  }
 
-  await writeStore(store);
-  return highlight;
+    if (input.highlightId) {
+      const idx = draft.highlights.findIndex((h) => h.id === input.highlightId);
+      if (idx === -1) return;
+      const highlight = normalizeHighlight(draft.highlights[idx]);
+      const already = highlight.items.some((i) => i.imageUrl === item.imageUrl);
+      if (!already) {
+        highlight.items = [...highlight.items, item];
+      }
+      if (!highlight.coverUrl) highlight.coverUrl = item.imageUrl;
+      draft.highlights[idx] = highlight;
+      result = highlight;
+    } else {
+      const title = (input.newTitle || "لحظات").trim().slice(0, 40) || "لحظات";
+      const highlight: Highlight = {
+        id: randomUUID(),
+        title,
+        coverUrl: item.imageUrl,
+        items: [item],
+      };
+      draft.highlights = [...draft.highlights, highlight];
+      result = highlight;
+    }
+  });
+  return result;
 }
 
 export async function removeHighlightItem(input: {
   highlightId: string;
   itemId: string;
 }): Promise<Highlight | null> {
-  const store = await readStore();
-  const idx = store.highlights.findIndex((h) => h.id === input.highlightId);
-  if (idx === -1) return null;
-  const highlight = normalizeHighlight(store.highlights[idx]);
-  highlight.items = highlight.items.filter((i) => i.id !== input.itemId);
-  if (highlight.coverUrl && !highlight.items.some((i) => i.imageUrl === highlight.coverUrl)) {
-    highlight.coverUrl = highlight.items[0]?.imageUrl || highlight.coverUrl;
-  }
-  store.highlights[idx] = highlight;
-  await writeStore(store);
-  return highlight;
+  let result: Highlight | null = null;
+  await mutateStore((draft) => {
+    const idx = draft.highlights.findIndex((h) => h.id === input.highlightId);
+    if (idx === -1) return;
+    const highlight = normalizeHighlight(draft.highlights[idx]);
+    highlight.items = highlight.items.filter((i) => i.id !== input.itemId);
+    if (highlight.coverUrl && !highlight.items.some((i) => i.imageUrl === highlight.coverUrl)) {
+      highlight.coverUrl = highlight.items[0]?.imageUrl || highlight.coverUrl;
+    }
+    draft.highlights[idx] = highlight;
+    result = highlight;
+  });
+  return result;
+}
+
+export async function deleteHighlight(highlightId: string): Promise<boolean> {
+  let removed = false;
+  await mutateStore((draft) => {
+    const before = draft.highlights.length;
+    draft.highlights = draft.highlights.filter((h) => h.id !== highlightId);
+    removed = draft.highlights.length < before;
+  });
+  return removed;
 }
 
 export async function followWithGoogle(input: {
@@ -671,8 +696,8 @@ export async function listActiveStories(): Promise<Story[]> {
 export async function addStory(input: {
   imageUrl: string;
   caption?: string;
+  mediaType?: "image" | "video";
 }): Promise<Story> {
-  const store = await readStore();
   const now = Date.now();
   const story: Story = {
     id: randomUUID(),
@@ -681,9 +706,11 @@ export async function addStory(input: {
     createdAt: new Date(now).toISOString(),
     expiresAt: new Date(now + STORY_TTL_MS).toISOString(),
     viewers: [],
+    mediaType: inferMediaType(input.imageUrl, input.mediaType),
   };
-  store.stories = [story, ...(store.stories || [])];
-  await writeStore(store);
+  await mutateStore((draft) => {
+    draft.stories = [story, ...(draft.stories || [])];
+  });
   return story;
 }
 

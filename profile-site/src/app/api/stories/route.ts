@@ -50,6 +50,7 @@ export async function GET(request: Request) {
       caption: story.caption,
       createdAt: story.createdAt,
       expiresAt: story.expiresAt,
+      mediaType: story.mediaType === "video" ? "video" : "image",
       viewerCount: story.viewers.length,
       viewers: isAdmin ? story.viewers : undefined,
       viewedByMe:
@@ -132,11 +133,12 @@ export async function POST(request: Request) {
 
   const imageUrl = String(body.imageUrl || "").trim();
   const caption = String(body.caption || "").trim();
+  const mediaType = body.mediaType === "video" ? "video" : "image";
   if (!imageUrl) {
-    return NextResponse.json({ error: "الصورة مطلوبة" }, { status: 400 });
+    return NextResponse.json({ error: "الصورة أو الفيديو مطلوب" }, { status: 400 });
   }
 
-  const story = await addStory({ imageUrl, caption });
+  const story = await addStory({ imageUrl, caption, mediaType });
   return NextResponse.json({ story }, { status: 201 });
 }
 

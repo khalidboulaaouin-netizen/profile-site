@@ -43,6 +43,7 @@ export type HighlightItem = {
   imageUrl: string;
   caption: string;
   createdAt: string;
+  mediaType?: "image" | "video";
 };
 
 export type Highlight = {
@@ -68,6 +69,7 @@ export type Story = {
   createdAt: string;
   expiresAt: string;
   viewers: StoryViewer[];
+  mediaType?: "image" | "video";
 };
 
 export type Follower = {

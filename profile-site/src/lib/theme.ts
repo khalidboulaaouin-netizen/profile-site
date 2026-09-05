@@ -10,6 +10,12 @@ export type ThemePreset = {
 
 export const THEME_PRESETS: ThemePreset[] = [
   {
+    id: "instagram",
+    accentColor: "#0095f6",
+    backgroundColor: "#fafafa",
+    decoration: "none",
+  },
+  {
     id: "teal",
     accentColor: "#0d6e6e",
     backgroundColor: "#eef2f4",
@@ -41,8 +47,8 @@ export const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: "ink",
-    accentColor: "#243447",
-    backgroundColor: "#eef1f4",
+    accentColor: "#262626",
+    backgroundColor: "#fafafa",
     decoration: "none",
   },
 ];
@@ -68,7 +74,7 @@ export function normalizeDecoration(
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const h = normalizeHex(hex, "#0d6e6e").slice(1);
+  const h = normalizeHex(hex, "#0095f6").slice(1);
   return {
     r: parseInt(h.slice(0, 2), 16),
     g: parseInt(h.slice(2, 4), 16),
@@ -103,12 +109,12 @@ export function themeCssVars(input: {
   backgroundColor?: string;
   decoration?: string;
 }): Record<string, string> {
-  const accent = normalizeHex(input.accentColor, "#0d6e6e");
-  const background = normalizeHex(input.backgroundColor, "#eef2f4");
+  const accent = normalizeHex(input.accentColor, "#0095f6");
+  const background = normalizeHex(input.backgroundColor, "#fafafa");
   const decoration = normalizeDecoration(input.decoration);
-  const accentDeep = darkenHex(accent, 0.2);
-  const bgTop = mixHex(background, "#ffffff", 0.35);
-  const bgBottom = mixHex(background, accent, 0.08);
+  const accentDeep = darkenHex(accent, 0.18);
+  const bgTop = mixHex(background, "#ffffff", 0.55);
+  const bgBottom = mixHex(background, "#ffffff", 0.15);
 
   return {
     "--bg": background,

@@ -163,6 +163,7 @@ export type Dictionary = {
   decorationWaves: string;
   decorationNone: string;
   saveAppearance: string;
+  presetInstagram: string;
   presetTeal: string;
   presetOcean: string;
   presetForest: string;
@@ -392,6 +393,7 @@ const ar: Dictionary = {
   decorationWaves: "أمواج",
   decorationNone: "بدون زخرفة",
   saveAppearance: "حفظ المظهر",
+  presetInstagram: "إنستغرام",
   presetTeal: "فيروزي",
   presetOcean: "محيط",
   presetForest: "غابة",
@@ -621,6 +623,7 @@ const en: Dictionary = {
   decorationWaves: "Waves",
   decorationNone: "No decoration",
   saveAppearance: "Save appearance",
+  presetInstagram: "Instagram",
   presetTeal: "Teal",
   presetOcean: "Ocean",
   presetForest: "Forest",

@@ -59,9 +59,9 @@ const defaultStore = (): Store => ({
     hideFollowing: false,
     enableLikes: true,
     enableComments: true,
-    accentColor: "#0d6e6e",
-    backgroundColor: "#eef2f4",
-    decoration: "soft",
+    accentColor: "#0095f6",
+    backgroundColor: "#fafafa",
+    decoration: "none",
     showReadReceipts: false,
     publicSiteUrl: "",
     colorMode: "system",
@@ -150,8 +150,8 @@ function normalizeStore(store: Store): Store {
       hideFollowing: store.settings?.hideFollowing ?? false,
       enableLikes: store.settings?.enableLikes ?? true,
       enableComments: store.settings?.enableComments ?? true,
-      accentColor: normalizeHex(store.settings?.accentColor, "#0d6e6e"),
-      backgroundColor: normalizeHex(store.settings?.backgroundColor, "#eef2f4"),
+      accentColor: normalizeHex(store.settings?.accentColor, "#0095f6"),
+      backgroundColor: normalizeHex(store.settings?.backgroundColor, "#fafafa"),
       decoration: normalizeDecoration(store.settings?.decoration),
       showReadReceipts: store.settings?.showReadReceipts ?? false,
       publicSiteUrl: String(store.settings?.publicSiteUrl || ""),
@@ -268,12 +268,12 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
   ) as Partial<SiteSettings>;
 
   if (clean.accentColor !== undefined) {
-    clean.accentColor = normalizeHex(clean.accentColor, store.settings.accentColor || "#0d6e6e");
+    clean.accentColor = normalizeHex(clean.accentColor, store.settings.accentColor || "#0095f6");
   }
   if (clean.backgroundColor !== undefined) {
     clean.backgroundColor = normalizeHex(
       clean.backgroundColor,
-      store.settings.backgroundColor || "#eef2f4",
+      store.settings.backgroundColor || "#fafafa",
     );
   }
   if (clean.decoration !== undefined) {

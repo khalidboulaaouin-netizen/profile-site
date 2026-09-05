@@ -364,12 +364,13 @@ export default function AdminSettingsPage() {
             <div className="theme-presets">
               {(
                 [
+                  ["instagram", t.presetInstagram, "#0095f6", "#fafafa", "none"],
                   ["teal", t.presetTeal, "#0d6e6e", "#eef2f4", "soft"],
                   ["ocean", t.presetOcean, "#1d6fbf", "#eef3f8", "waves"],
                   ["forest", t.presetForest, "#2f6b3c", "#eef3ee", "mesh"],
                   ["sunset", t.presetSunset, "#b85a2a", "#f6efe8", "soft"],
                   ["rose", t.presetRose, "#9b3d5a", "#f7eef1", "dots"],
-                  ["ink", t.presetInk, "#243447", "#eef1f4", "none"],
+                  ["ink", t.presetInk, "#262626", "#fafafa", "none"],
                 ] as const
               ).map(([id, label, accent, background, decoration]) => (
                 <button
@@ -408,7 +409,7 @@ export default function AdminSettingsPage() {
               {t.accentColor}
               <input
                 type="color"
-                value={settings.accentColor || "#0d6e6e"}
+                value={settings.accentColor || "#0095f6"}
                 onChange={(e) =>
                   setSettings({ ...settings, accentColor: e.target.value })
                 }
@@ -418,7 +419,7 @@ export default function AdminSettingsPage() {
               {t.backgroundColor}
               <input
                 type="color"
-                value={settings.backgroundColor || "#eef2f4"}
+                value={settings.backgroundColor || "#fafafa"}
                 onChange={(e) =>
                   setSettings({ ...settings, backgroundColor: e.target.value })
                 }

@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #eef2f4;
-  --bg-elevated: #f8fafb;
-  --ink: #15202b;
-  --muted: #5b6b78;
-  --line: rgba(21, 32, 43, 0.1);
-  --accent: #0d6e6e;
-  --accent-deep: #0a5555;
-  --accent-soft: rgba(13, 110, 110, 0.12);
-  --danger: #9b2c2c;
-  --shadow: 0 18px 50px rgba(21, 32, 43, 0.12);
-  --radius: 18px;
+  --bg: #fafafa;
+  --bg-elevated: #ffffff;
+  --ink: #262626;
+  --muted: #8e8e8e;
+  --line: rgba(38, 38, 38, 0.12);
+  --accent: #0095f6;
+  --accent-deep: #0077c8;
+  --accent-soft: rgba(0, 149, 246, 0.12);
+  --danger: #ed4956;
+  --shadow: 0 12px 40px rgba(38, 38, 38, 0.08);
+  --radius: 12px;
   --font-display: var(--font-cairo);
   --font-body: var(--font-ibm);
 }
@@ -29,9 +29,7 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background:
-    radial-gradient(1200px 600px at 100% -10%, var(--accent-glow, rgba(13, 110, 110, 0.14)), transparent 55%),
-    radial-gradient(900px 500px at -10% 20%, var(--accent-glow-2, rgba(34, 74, 110, 0.1)), transparent 50%),
-    linear-gradient(180deg, var(--bg-top, #e8eef2) 0%, var(--bg) 40%, var(--bg-bottom, #e6ecef) 100%);
+    linear-gradient(180deg, var(--bg-top, #ffffff) 0%, var(--bg) 45%, var(--bg-bottom, #fafafa) 100%);
   font-family: var(--font-body), "Segoe UI", sans-serif;
   transition: background 0.35s ease, color 0.25s ease;
 }
@@ -114,9 +112,8 @@ textarea {
 
 .cover-fallback {
   background:
-    linear-gradient(135deg, rgba(13, 110, 110, 0.55), rgba(21, 32, 43, 0.35)),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
-    linear-gradient(160deg, #1f4d57, #0d6e6e 45%, #27475c);
+    linear-gradient(135deg, rgba(0, 149, 246, 0.35), rgba(38, 38, 38, 0.25)),
+    linear-gradient(160deg, #262626, #0095f6 55%, #fafafa);
 }
 
 .profile-shell {
@@ -138,7 +135,7 @@ textarea {
   height: 118px;
   border-radius: 50%;
   padding: 4px;
-  background: linear-gradient(145deg, #0d6e6e, #2a7a8c 50%, #dce8ea);
+  background: linear-gradient(135deg, #f58529, #dd2a7b 45%, #8134af, #515bd4);
   box-shadow: var(--shadow);
 }
 
@@ -631,7 +628,7 @@ button.highlight {
 }
 
 button.highlight.has-stories .highlight-cover {
-  border-color: var(--accent, #0d6e6e);
+  border-color: var(--accent, #0095f6);
   box-shadow: 0 0 0 2px rgba(13, 110, 110, 0.18);
 }
 

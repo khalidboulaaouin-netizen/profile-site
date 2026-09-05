@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import { randomUUID } from "crypto";
 import { auth } from "@/lib/auth";
 import { isBlocked } from "@/lib/db";
+import { uploadPublicBinary } from "@/lib/storage";
 
 const ALLOWED_TYPES = new Set([
   "audio/webm",
@@ -57,11 +56,8 @@ export async function POST(request: Request) {
 
   const ext = EXT_BY_TYPE[mime] || "webm";
   const filename = `voice-${randomUUID()}.${ext}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadDir, { recursive: true });
-
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(uploadDir, filename), buffer);
+  const url = await uploadPublicBinary(filename, buffer, mime);
 
-  return NextResponse.json({ url: `/uploads/${filename}` });
+  return NextResponse.json({ url });
 }

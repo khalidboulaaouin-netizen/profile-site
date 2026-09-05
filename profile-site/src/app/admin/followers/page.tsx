@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdminNav } from "@/components/AdminNav";
 import { useEffect, useState, useTransition } from "react";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
@@ -80,17 +80,21 @@ export default function AdminFollowersPage() {
 
   return (
     <main className="admin-page">
-      <nav className="admin-nav">
-        <Link href="/admin">{t.overview}</Link>
-        <Link href="/admin/posts">{t.posts}</Link>
-        <Link href="/admin/stories">{t.stories}</Link>
-        <Link href="/admin/messages">{t.messages}</Link>
-        <Link href="/admin/settings">{t.settings}</Link>
-        <Link href="/admin/followers" className="active">
-          {t.followers}
-        </Link>
-        <Link href="/">{t.viewPage}</Link>
-      </nav>
+      <AdminNav
+        labels={{
+          overview: t.overview,
+          posts: t.posts,
+          stories: t.stories,
+          messages: t.messages,
+          settings: t.settings,
+          followers: t.followers,
+          viewPage: t.viewPage,
+          notifications: t.notifications,
+          markAllRead: t.markAllRead,
+          noNotifications: t.noNotifications,
+          enableBrowserPush: t.enableBrowserPush,
+        }}
+      />
 
       <div className="panel">
         <h1>{t.followersTitle}</h1>

@@ -1,5 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
 import { randomUUID } from "crypto";
 import type {
   Store,
@@ -13,11 +11,11 @@ import type {
   StoryViewer,
   Conversation,
   ChatMessage,
+  OwnerNotification,
 } from "./types";
 import { normalizeDecoration, normalizeHex } from "./theme";
+import { readPersistedStoreJson, writePersistedStoreJson } from "./storage";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_PATH = path.join(DATA_DIR, "store.json");
 const STORY_TTL_MS = 24 * 60 * 60 * 1000;
 
 const defaultStore = (): Store => ({
@@ -44,6 +42,7 @@ const defaultStore = (): Store => ({
   followers: [],
   blockedUsers: [],
   conversations: [],
+  notifications: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",
     siteDescription:
@@ -62,6 +61,8 @@ const defaultStore = (): Store => ({
     backgroundColor: "#eef2f4",
     decoration: "soft",
     showReadReceipts: false,
+    publicSiteUrl: "",
+    colorMode: "system",
   },
 });
 
@@ -125,6 +126,7 @@ function normalizeStore(store: Store): Store {
     stories: (store.stories || [])
       .map(normalizeStory)
       .filter((story) => isStoryActive(story, now)),
+    followers: Array.isArray(store.followers) ? store.followers : [],
     blockedUsers: Array.isArray(store.blockedUsers) ? store.blockedUsers : [],
     conversations: Array.isArray(store.conversations)
       ? store.conversations.map((c) => ({
@@ -145,26 +147,43 @@ function normalizeStore(store: Store): Store {
       backgroundColor: normalizeHex(store.settings?.backgroundColor, "#eef2f4"),
       decoration: normalizeDecoration(store.settings?.decoration),
       showReadReceipts: store.settings?.showReadReceipts ?? false,
+      publicSiteUrl: String(store.settings?.publicSiteUrl || ""),
+      colorMode:
+        store.settings?.colorMode === "light" || store.settings?.colorMode === "dark"
+          ? store.settings.colorMode
+          : "system",
     },
+    notifications: Array.isArray(store.notifications)
+      ? store.notifications
+          .map((n) => ({
+            id: String(n.id || randomUUID()),
+            type: (n.type === "follow" ? "follow" : "message") as "follow" | "message",
+            title: String(n.title || ""),
+            body: String(n.body || ""),
+            href: n.href ? String(n.href) : undefined,
+            createdAt: String(n.createdAt || new Date().toISOString()),
+            read: Boolean(n.read),
+          }))
+          .slice(0, 100)
+      : [],
   };
 }
 
 async function ensureStore(): Promise<Store> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  try {
-    const raw = await fs.readFile(STORE_PATH, "utf8");
-    const normalized = normalizeStore(JSON.parse(raw) as Store);
-    // Persist cleanup of expired stories when needed
+  const raw = await readPersistedStoreJson();
+  if (raw) {
     const parsed = JSON.parse(raw) as Store;
+    const normalized = normalizeStore(parsed);
+    // Persist cleanup of expired stories when needed
     if ((parsed.stories || []).length !== normalized.stories.length) {
-      await fs.writeFile(STORE_PATH, JSON.stringify(normalized, null, 2), "utf8");
+      await writePersistedStoreJson(JSON.stringify(normalized, null, 2));
     }
     return normalized;
-  } catch {
-    const store = defaultStore();
-    await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
-    return store;
   }
+
+  const store = defaultStore();
+  await writePersistedStoreJson(JSON.stringify(store, null, 2));
+  return store;
 }
 
 export async function readStore(): Promise<Store> {
@@ -172,8 +191,7 @@ export async function readStore(): Promise<Store> {
 }
 
 export async function writeStore(store: Store): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
+  await writePersistedStoreJson(JSON.stringify(store, null, 2));
 }
 
 export async function updateProfile(patch: Partial<Profile>): Promise<Profile> {
@@ -203,6 +221,13 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
   }
   if (clean.decoration !== undefined) {
     clean.decoration = normalizeDecoration(clean.decoration);
+  }
+  if (clean.publicSiteUrl !== undefined) {
+    clean.publicSiteUrl = String(clean.publicSiteUrl || "").trim().replace(/\/$/, "");
+  }
+  if (clean.colorMode !== undefined) {
+    clean.colorMode =
+      clean.colorMode === "light" || clean.colorMode === "dark" ? clean.colorMode : "system";
   }
 
   store.settings = {
@@ -421,6 +446,18 @@ export async function followWithGoogle(input: {
     followedAt: new Date().toISOString(),
   };
   store.followers = [follower, ...store.followers];
+  store.notifications = [
+    {
+      id: randomUUID(),
+      type: "follow" as const,
+      title: "متابع جديد",
+      body: `${follower.name} بدأ متابعتك`,
+      href: "/admin/followers",
+      createdAt: new Date().toISOString(),
+      read: false,
+    },
+    ...(store.notifications || []),
+  ].slice(0, 100);
   await writeStore(store);
   return { follower, alreadyFollowing: false };
 }
@@ -620,6 +657,18 @@ export async function sendFollowerMessage(input: {
       messages: [message],
     };
     store.conversations = [conversation, ...(store.conversations || [])];
+    store.notifications = [
+      {
+        id: randomUUID(),
+        type: "message" as const,
+        title: "رسالة جديدة",
+        body: `${input.name || "متابع"} أرسل رسالة`,
+        href: "/admin/messages",
+        createdAt: now,
+        read: false,
+      },
+      ...(store.notifications || []),
+    ].slice(0, 100);
     await writeStore(store);
     return conversation;
   }
@@ -631,6 +680,18 @@ export async function sendFollowerMessage(input: {
   conversation.updatedAt = now;
   conversation.messages = [...conversation.messages, message];
   store.conversations[idx] = conversation;
+  store.notifications = [
+    {
+      id: randomUUID(),
+      type: "message" as const,
+      title: "رسالة جديدة",
+      body: `${input.name || conversation.name || "متابع"} أرسل رسالة`,
+      href: "/admin/messages",
+      createdAt: now,
+      read: false,
+    },
+    ...(store.notifications || []),
+  ].slice(0, 100);
   await writeStore(store);
   return conversation;
 }
@@ -690,4 +751,37 @@ export async function countUnreadForOwner(): Promise<number> {
     (sum, c) => sum + c.messages.filter((m) => m.from === "follower" && !m.readByOwner).length,
     0,
   );
+}
+
+export async function createOwnerNotification(
+  input: Omit<OwnerNotification, "id" | "createdAt" | "read">,
+): Promise<OwnerNotification> {
+  const store = await readStore();
+  const note: OwnerNotification = {
+    id: randomUUID(),
+    type: input.type,
+    title: input.title,
+    body: input.body,
+    href: input.href,
+    createdAt: new Date().toISOString(),
+    read: false,
+  };
+  store.notifications = [note, ...(store.notifications || [])].slice(0, 100);
+  await writeStore(store);
+  return note;
+}
+
+export async function listOwnerNotifications(): Promise<OwnerNotification[]> {
+  const store = await readStore();
+  return store.notifications || [];
+}
+
+export async function markOwnerNotificationsRead(ids?: string[]): Promise<OwnerNotification[]> {
+  const store = await readStore();
+  store.notifications = (store.notifications || []).map((n) => {
+    if (!ids || ids.length === 0 || ids.includes(n.id)) return { ...n, read: true };
+    return n;
+  });
+  await writeStore(store);
+  return store.notifications;
 }

@@ -134,6 +134,23 @@ export type SiteSettings = {
   decoration: "soft" | "mesh" | "dots" | "waves" | "none";
   /** Show “seen” read receipts to followers in private chat */
   showReadReceipts: boolean;
+  /**
+   * Free public site URL used for SEO/share (e.g. https://xxx.vercel.app).
+   * No paid domain required — keep your free Vercel URL here.
+   */
+  publicSiteUrl: string;
+  /** Preferred color mode for visitors (also overridable in browser) */
+  colorMode: "light" | "dark" | "system";
+};
+
+export type OwnerNotification = {
+  id: string;
+  type: "follow" | "message";
+  title: string;
+  body: string;
+  href?: string;
+  createdAt: string;
+  read: boolean;
 };
 
 export type Store = {
@@ -145,4 +162,5 @@ export type Store = {
   blockedUsers: BlockedUser[];
   conversations: Conversation[];
   settings: SiteSettings;
+  notifications: OwnerNotification[];
 };

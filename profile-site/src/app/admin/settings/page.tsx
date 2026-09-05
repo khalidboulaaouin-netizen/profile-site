@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdminNav } from "@/components/AdminNav";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Highlight, Profile, SiteSettings } from "@/lib/types";
@@ -107,17 +107,21 @@ export default function AdminSettingsPage() {
 
   return (
     <main className="admin-page">
-      <nav className="admin-nav">
-        <Link href="/admin">{t.overview}</Link>
-        <Link href="/admin/posts">{t.posts}</Link>
-        <Link href="/admin/stories">{t.stories}</Link>
-        <Link href="/admin/messages">{t.messages}</Link>
-        <Link href="/admin/settings" className="active">
-          {t.settings}
-        </Link>
-        <Link href="/admin/followers">{t.followers}</Link>
-        <Link href="/">{t.viewPage}</Link>
-      </nav>
+      <AdminNav
+        labels={{
+          overview: t.overview,
+          posts: t.posts,
+          stories: t.stories,
+          messages: t.messages,
+          settings: t.settings,
+          followers: t.followers,
+          viewPage: t.viewPage,
+          notifications: t.notifications,
+          markAllRead: t.markAllRead,
+          noNotifications: t.noNotifications,
+          enableBrowserPush: t.enableBrowserPush,
+        }}
+      />
 
       {message && (
         <p className="panel" style={{ marginBottom: "1rem", color: "var(--accent-deep)" }}>
@@ -201,9 +205,24 @@ export default function AdminSettingsPage() {
               accept="image/*"
               onChange={async (e) => {
                 const f = e.target.files?.[0];
-                if (!f) return;
-                const url = await uploadFile(f);
-                setProfile({ ...profile, avatarUrl: url });
+                if (!f || !profile) return;
+                setBusy(true);
+                setMessage("");
+                try {
+                  const url = await uploadFile(f);
+                  const next = { ...profile, avatarUrl: url };
+                  setProfile(next);
+                  const res = await fetch("/api/profile", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(next),
+                  });
+                  setMessage(res.ok ? t.savedProfile : t.saveFailed);
+                } catch {
+                  setMessage(t.uploadFailed);
+                } finally {
+                  setBusy(false);
+                }
               }}
             />
           </label>
@@ -214,9 +233,24 @@ export default function AdminSettingsPage() {
               accept="image/*"
               onChange={async (e) => {
                 const f = e.target.files?.[0];
-                if (!f) return;
-                const url = await uploadFile(f);
-                setProfile({ ...profile, coverUrl: url });
+                if (!f || !profile) return;
+                setBusy(true);
+                setMessage("");
+                try {
+                  const url = await uploadFile(f);
+                  const next = { ...profile, coverUrl: url };
+                  setProfile(next);
+                  const res = await fetch("/api/profile", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(next),
+                  });
+                  setMessage(res.ok ? t.savedProfile : t.saveFailed);
+                } catch {
+                  setMessage(t.uploadFailed);
+                } finally {
+                  setBusy(false);
+                }
               }}
             />
           </label>
@@ -282,6 +316,18 @@ export default function AdminSettingsPage() {
               }
             />
           </label>
+          <label>
+            {t.publicSiteUrl}
+            <input
+              value={settings.publicSiteUrl || ""}
+              onChange={(e) => setSettings({ ...settings, publicSiteUrl: e.target.value })}
+              placeholder="https://your-site.vercel.app"
+              dir="ltr"
+            />
+          </label>
+          <p className="lede" style={{ marginTop: "-0.35rem" }}>
+            {t.publicSiteUrlHelp}
+          </p>
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <input
               type="checkbox"
@@ -386,6 +432,23 @@ export default function AdminSettingsPage() {
             </select>
           </label>
 
+          <label>
+            {t.colorModeDefault}
+            <select
+              value={settings.colorMode || "system"}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  colorMode: e.target.value as SiteSettings["colorMode"],
+                })
+              }
+            >
+              <option value="system">{t.themeSystem}</option>
+              <option value="light">{t.themeLight}</option>
+              <option value="dark">{t.themeDark}</option>
+            </select>
+          </label>
+
           <button className="btn btn-primary" type="submit" disabled={busy}>
             {t.saveAppearance}
           </button>
@@ -456,6 +519,71 @@ export default function AdminSettingsPage() {
             {t.saveSeo}
           </button>
         </form>
+      </div>
+
+      <div className="panel" style={{ marginTop: "1rem" }}>
+        <h2>{t.backupSection}</h2>
+        <p className="lede">{t.backupLede}</p>
+        <div className="form-stack backup-actions">
+          <button
+            className="btn btn-primary"
+            type="button"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setMessage("");
+              try {
+                const res = await fetch("/api/backup");
+                if (!res.ok) throw new Error("export failed");
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `profile-backup-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                setMessage(t.backupExported);
+              } catch {
+                setMessage(t.backupFailed);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {t.exportBackup}
+          </button>
+          <label className="btn">
+            {t.importBackup}
+            <input
+              type="file"
+              accept="application/json,.json"
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                setBusy(true);
+                setMessage("");
+                try {
+                  const text = await file.text();
+                  const parsed = JSON.parse(text);
+                  const res = await fetch("/api/backup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(parsed),
+                  });
+                  if (!res.ok) throw new Error("import failed");
+                  setMessage(t.backupImported);
+                  window.setTimeout(() => window.location.reload(), 500);
+                } catch {
+                  setMessage(t.backupFailed);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            />
+          </label>
+        </div>
       </div>
 
       <div className="panel" style={{ marginTop: "1rem" }}>

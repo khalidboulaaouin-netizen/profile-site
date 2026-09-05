@@ -46,6 +46,12 @@ export async function PATCH(request: Request) {
       body.decoration !== undefined ? normalizeDecoration(String(body.decoration)) : undefined,
     showReadReceipts:
       body.showReadReceipts !== undefined ? Boolean(body.showReadReceipts) : undefined,
+    publicSiteUrl:
+      body.publicSiteUrl !== undefined ? String(body.publicSiteUrl).trim() : undefined,
+    colorMode:
+      body.colorMode === "light" || body.colorMode === "dark" || body.colorMode === "system"
+        ? body.colorMode
+        : undefined,
   });
 
   return NextResponse.json({ settings });

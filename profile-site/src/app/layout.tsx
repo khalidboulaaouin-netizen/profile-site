@@ -3,6 +3,7 @@ import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { readStore } from "@/lib/db";
 import { getLocaleMeta, getOgLocale } from "@/lib/i18n";
+import { getPublicSiteUrl, toAbsoluteUrl } from "@/lib/site-url";
 import { themeCssVars } from "@/lib/theme";
 import "./globals.css";
 
@@ -24,7 +25,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const store = await readStore();
   const title = store.settings.siteTitle;
   const description = store.settings.siteDescription;
-  const siteUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const siteUrl = getPublicSiteUrl(store.settings);
+  const ogImages = [
+    store.profile.coverUrl,
+    store.profile.avatarUrl,
+    ...store.posts.filter((p) => !p.hidden).slice(0, 4).map((p) => p.imageUrl),
+  ]
+    .filter(Boolean)
+    .map((url) => ({ url: toAbsoluteUrl(String(url), siteUrl) }));
 
   return {
     metadataBase: new URL(siteUrl),
@@ -41,14 +49,14 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       siteName: store.settings.brandName,
-      images: store.profile.avatarUrl
-        ? [{ url: store.profile.avatarUrl }]
-        : undefined,
+      url: siteUrl,
+      images: ogImages.length ? ogImages : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ogImages.length ? [ogImages[0].url] : undefined,
     },
     robots: {
       index: true,
@@ -72,12 +80,29 @@ export default async function RootLayout({
   const store = await readStore();
   const locale = getLocaleMeta(store.settings.language);
   const themeVars = themeCssVars(store.settings);
+  const colorMode = store.settings.colorMode || "system";
+
+  const colorBootScript = `
+(function(){
+  try {
+    var saved = localStorage.getItem('hodouri-color-mode');
+    var mode = (saved === 'light' || saved === 'dark' || saved === 'system') ? saved : ${JSON.stringify(colorMode)};
+    var applied = mode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : mode;
+    document.documentElement.dataset.colorMode = applied;
+  } catch (e) {}
+})();`;
 
   return (
-    <html lang={locale.code} dir={locale.dir}>
+    <html lang={locale.code} dir={locale.dir} data-color-mode={colorMode === "dark" ? "dark" : "light"}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: colorBootScript }} />
+      </head>
       <body
         className={`${cairo.variable} ${ibm.variable} antialiased`}
         data-decoration={themeVars["--decoration"]}
+        data-color-mode={colorMode === "dark" ? "dark" : undefined}
         style={themeVars as React.CSSProperties}
       >
         <Providers>{children}</Providers>

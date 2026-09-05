@@ -194,6 +194,27 @@ export type Dictionary = {
   voicePermissionDenied: string;
   voiceMessage: string;
   sendingVoice: string;
+  shareProfile: string;
+  linkCopied: string;
+  shareFailed: string;
+  theme: string;
+  themeLight: string;
+  themeDark: string;
+  themeSystem: string;
+  notifications: string;
+  markAllRead: string;
+  noNotifications: string;
+  enableBrowserPush: string;
+  publicSiteUrl: string;
+  publicSiteUrlHelp: string;
+  colorModeDefault: string;
+  backupSection: string;
+  backupLede: string;
+  exportBackup: string;
+  importBackup: string;
+  backupExported: string;
+  backupImported: string;
+  backupFailed: string;
 };
 
 const ar: Dictionary = {
@@ -383,6 +404,27 @@ const ar: Dictionary = {
   voicePermissionDenied: "يلزم السماح بالمايكروفون لإرسال صوت.",
   voiceMessage: "رسالة صوتية",
   sendingVoice: "جارٍ إرسال الصوت...",
+  shareProfile: "مشاركة الصفحة",
+  linkCopied: "تم نسخ الرابط",
+  shareFailed: "تعذّرت المشاركة",
+  theme: "المظهر",
+  themeLight: "فاتح",
+  themeDark: "داكن",
+  themeSystem: "تلقائي",
+  notifications: "الإشعارات",
+  markAllRead: "تعليم الكل كمقروء",
+  noNotifications: "لا إشعارات بعد.",
+  enableBrowserPush: "تفعيل تنبيهات المتصفح",
+  publicSiteUrl: "رابط الصفحة العام (مجاني)",
+  publicSiteUrlHelp: "ضع رابط Vercel المجاني مثل https://xxx.vercel.app — بدون شراء نطاق مدفوع.",
+  colorModeDefault: "المظهر الافتراضي للزوار",
+  backupSection: "نسخة احتياطية مجانية",
+  backupLede: "صدّر أو استورد إعداداتك وروابط الوسائط كملف JSON مجاناً.",
+  exportBackup: "تصدير نسخة احتياطية",
+  importBackup: "استيراد نسخة احتياطية",
+  backupExported: "تم تنزيل النسخة الاحتياطية.",
+  backupImported: "تم استيراد النسخة الاحتياطية.",
+  backupFailed: "فشلت عملية النسخة الاحتياطية.",
 };
 
 const en: Dictionary = {
@@ -572,6 +614,27 @@ const en: Dictionary = {
   voicePermissionDenied: "Microphone permission is required to send voice.",
   voiceMessage: "Voice message",
   sendingVoice: "Sending voice...",
+  shareProfile: "Share page",
+  linkCopied: "Link copied",
+  shareFailed: "Could not share",
+  theme: "Theme",
+  themeLight: "Light",
+  themeDark: "Dark",
+  themeSystem: "System",
+  notifications: "Notifications",
+  markAllRead: "Mark all read",
+  noNotifications: "No notifications yet.",
+  enableBrowserPush: "Enable browser alerts",
+  publicSiteUrl: "Public page URL (free)",
+  publicSiteUrlHelp: "Use your free Vercel URL like https://xxx.vercel.app — no paid domain needed.",
+  colorModeDefault: "Default theme for visitors",
+  backupSection: "Free backup",
+  backupLede: "Export or import settings and media URLs as a free JSON file.",
+  exportBackup: "Export backup",
+  importBackup: "Import backup",
+  backupExported: "Backup downloaded.",
+  backupImported: "Backup imported.",
+  backupFailed: "Backup failed.",
 };
 
 const fr: Dictionary = {

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import { randomUUID } from "crypto";
 import { requireAdmin } from "@/lib/admin";
+import { uploadPublicBinary } from "@/lib/storage";
 
 const IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 const VIDEO_EXTS = new Set(["mp4", "webm", "mov", "m4v"]);
@@ -56,14 +55,15 @@ export async function POST(request: Request) {
   }
 
   const filename = `${randomUUID()}.${safeExt}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadDir, { recursive: true });
-
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(uploadDir, filename), buffer);
+  const url = await uploadPublicBinary(
+    filename,
+    buffer,
+    mime || (isVideo ? "video/mp4" : "image/jpeg"),
+  );
 
   return NextResponse.json({
-    url: `/uploads/${filename}`,
+    url,
     mediaType: isVideo ? "video" : "image",
   });
 }

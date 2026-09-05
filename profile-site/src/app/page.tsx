@@ -4,10 +4,13 @@ import { HighlightsRow } from "@/components/HighlightsRow";
 import { MessageButton } from "@/components/MessageButton";
 import { PostGrid } from "@/components/PostGrid";
 import { ProfileHeader } from "@/components/ProfileHeader";
+import { ShareButton } from "@/components/ShareButton";
 import { StoryRing } from "@/components/StoryRing";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { auth } from "@/lib/auth";
 import { isBlocked, readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
+import { getPublicSiteUrl, toAbsoluteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +19,7 @@ export default async function HomePage() {
   const locale = normalizeLocale(store.settings.language);
   const t = getDictionary(locale);
   const session = await auth();
+  const siteUrl = getPublicSiteUrl(store.settings);
 
   if (session?.user?.role === "follower" && (await isBlocked(session.user.id))) {
     return (
@@ -28,21 +32,40 @@ export default async function HomePage() {
     );
   }
 
+  const publicPosts = store.posts.filter((p) => !p.hidden);
+  const imageUrls = [
+    store.profile.avatarUrl,
+    store.profile.coverUrl,
+    ...publicPosts.map((p) => p.imageUrl),
+  ]
+    .filter(Boolean)
+    .map((url) => toAbsoluteUrl(String(url), siteUrl));
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     name: store.settings.siteTitle,
     description: store.settings.siteDescription,
     inLanguage: locale,
+    url: siteUrl,
+    image: imageUrls.slice(0, 12),
     mainEntity: {
       "@type": "Person",
       name: store.profile.displayName,
       alternateName: store.profile.username,
       description: store.profile.bio,
-      image: store.profile.avatarUrl || undefined,
-      url: store.profile.website || process.env.NEXTAUTH_URL,
+      image: store.profile.avatarUrl
+        ? toAbsoluteUrl(store.profile.avatarUrl, siteUrl)
+        : undefined,
+      url: store.profile.website || siteUrl,
       address: store.profile.location || undefined,
     },
+    hasPart: publicPosts.slice(0, 24).map((post) => ({
+      "@type": "ImageObject",
+      contentUrl: toAbsoluteUrl(post.imageUrl, siteUrl),
+      caption: post.caption || undefined,
+      datePublished: post.createdAt,
+    })),
   };
 
   return (
@@ -52,10 +75,31 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      <div className="top-tools">
+        <ThemeToggle
+          initialMode={store.settings.colorMode || "system"}
+          labels={{
+            theme: t.theme,
+            light: t.themeLight,
+            dark: t.themeDark,
+            system: t.themeSystem,
+          }}
+        />
+        <ShareButton
+          url={siteUrl}
+          title={store.settings.siteTitle || store.profile.displayName}
+          labels={{
+            share: t.shareProfile,
+            copied: t.linkCopied,
+            shareFailed: t.shareFailed,
+          }}
+        />
+      </div>
+
       <ProfileHeader
         profile={store.profile}
         brandName={store.settings.brandName}
-        postsCount={store.posts.filter((p) => !p.hidden).length}
+        postsCount={publicPosts.length}
         followersCount={store.followers.length}
         verified={store.settings.verified}
         hideFollowers={store.settings.hideFollowers}
@@ -98,7 +142,7 @@ export default async function HomePage() {
       </div>
 
       <PostGrid
-        posts={store.posts.filter((p) => !p.hidden)}
+        posts={publicPosts}
         labels={t}
         locale={locale}
         enableLikes={store.settings.enableLikes}

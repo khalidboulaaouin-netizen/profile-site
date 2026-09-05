@@ -1,0 +1,54 @@
+import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin";
+import { addPost, deletePost, readStore, updatePost } from "@/lib/db";
+
+export async function GET() {
+  const store = await readStore();
+  return NextResponse.json({ posts: store.posts });
+}
+
+export async function POST(request: Request) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const body = await request.json();
+  const imageUrl = String(body.imageUrl || "").trim();
+  const caption = String(body.caption || "").trim();
+
+  if (!imageUrl) {
+    return NextResponse.json({ error: "الصورة مطلوبة" }, { status: 400 });
+  }
+
+  const post = await addPost({ imageUrl, caption });
+  return NextResponse.json({ post }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const body = await request.json();
+  const id = String(body.id || "");
+  if (!id) return NextResponse.json({ error: "المعرف مطلوب" }, { status: 400 });
+
+  const post = await updatePost(id, {
+    caption: body.caption !== undefined ? String(body.caption) : undefined,
+    imageUrl: body.imageUrl !== undefined ? String(body.imageUrl) : undefined,
+  });
+
+  if (!post) return NextResponse.json({ error: "المنشور غير موجود" }, { status: 404 });
+  return NextResponse.json({ post });
+}
+
+export async function DELETE(request: Request) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "المعرف مطلوب" }, { status: 400 });
+
+  const ok = await deletePost(id);
+  if (!ok) return NextResponse.json({ error: "المنشور غير موجود" }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}

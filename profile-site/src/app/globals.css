@@ -818,6 +818,115 @@ button.highlight.has-stories .highlight-cover {
   letter-spacing: 0.02em;
 }
 
+.article-badge {
+  display: inline-block;
+  margin-inline-end: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(0, 149, 246, 0.12);
+  color: #0077c2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.post-tile.is-text {
+  background: linear-gradient(160deg, #eef6fb 0%, #dfeaf1 55%, #d2dde6 100%);
+}
+
+.post-tile.is-text .text-tile-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  text-align: start;
+  color: #12212b;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  font-weight: 600;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(245, 249, 252, 0.72) 45%,
+    rgba(236, 243, 248, 0.96) 100%
+  );
+}
+
+.post-tile.is-text img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+}
+
+.article-mark {
+  width: 1.55rem;
+  height: 1.55rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(0, 149, 246, 0.9);
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.modal-sheet.modal-article {
+  grid-template-columns: 0.75fr 1.25fr;
+}
+
+.article-cover-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  background: linear-gradient(160deg, #e8f3fa, #d5e4ee);
+  color: #0077c2;
+  font-size: 3rem;
+}
+
+.article-body {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 1.02rem;
+}
+
+.publish-kind {
+  border: 1px solid rgba(18, 33, 43, 0.12);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.publish-kind legend {
+  padding-inline: 0.25rem;
+  font-weight: 700;
+}
+
+.publish-kind-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.admin-text-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #e8f3fa, #d5e4ee);
+  color: #0077c2;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
 .hidden-badge {
   display: inline-block;
   margin-inline-end: 0.35rem;

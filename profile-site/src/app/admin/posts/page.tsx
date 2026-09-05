@@ -19,8 +19,11 @@ async function uploadFile(
   };
 }
 
+type PublishKind = "media" | "text";
+
 export default function AdminPostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [kind, setKind] = useState<PublishKind>("media");
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -47,26 +50,54 @@ export default function AdminPostsPage() {
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    if (!file) {
-      setError(t.chooseMedia);
-      return;
-    }
     setBusy(true);
     setError("");
     try {
-      const uploaded = await uploadFile(file);
-      const res = await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageUrl: uploaded.url,
-          mediaType: uploaded.mediaType,
-          caption,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || t.saveFailed);
+      if (kind === "text") {
+        const text = caption.trim();
+        if (!text) {
+          setError(t.chooseArticleText);
+          setBusy(false);
+          return;
+        }
+        let imageUrl = "";
+        if (file) {
+          const uploaded = await uploadFile(file);
+          imageUrl = uploaded.url;
+        }
+        const res = await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl,
+            mediaType: "text",
+            caption: text,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || t.saveFailed);
+        }
+      } else {
+        if (!file) {
+          setError(t.chooseMedia);
+          setBusy(false);
+          return;
+        }
+        const uploaded = await uploadFile(file);
+        const res = await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: uploaded.url,
+            mediaType: uploaded.mediaType,
+            caption,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || t.saveFailed);
+        }
       }
       setCaption("");
       setFile(null);
@@ -127,22 +158,79 @@ export default function AdminPostsPage() {
         <p className="lede">{t.publishLede}</p>
 
         <form className="form-stack" onSubmit={onCreate}>
-          <label>
-            {t.mediaFile}
-            <input
-              type="file"
-              accept="image/*,video/mp4,video/webm,video/quicktime"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              required
-            />
-          </label>
-          <p className="lede" style={{ marginTop: "-0.35rem" }}>
-            {t.mediaHelp}
-          </p>
-          <label>
-            {t.caption}
-            <textarea value={caption} onChange={(e) => setCaption(e.target.value)} />
-          </label>
+          <fieldset className="publish-kind">
+            <legend>{t.publishKind}</legend>
+            <label className="publish-kind-option">
+              <input
+                type="radio"
+                name="publishKind"
+                checked={kind === "media"}
+                onChange={() => setKind("media")}
+              />
+              {t.publishKindMedia}
+            </label>
+            <label className="publish-kind-option">
+              <input
+                type="radio"
+                name="publishKind"
+                checked={kind === "text"}
+                onChange={() => setKind("text")}
+              />
+              {t.publishKindText}
+            </label>
+          </fieldset>
+
+          {kind === "media" ? (
+            <>
+              <label>
+                {t.mediaFile}
+                <input
+                  type="file"
+                  accept="image/*,video/mp4,video/webm,video/quicktime"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  required
+                />
+              </label>
+              <p className="lede" style={{ marginTop: "-0.35rem" }}>
+                {t.mediaHelp}
+              </p>
+              <label>
+                {t.caption}
+                <textarea
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  rows={4}
+                  maxLength={2200}
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <label>
+                {t.articleBody}
+                <textarea
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  rows={12}
+                  maxLength={20000}
+                  required
+                  placeholder={t.articlePlaceholder}
+                />
+              </label>
+              <p className="lede" style={{ marginTop: "-0.35rem" }}>
+                {t.articleHelp}
+              </p>
+              <label>
+                {t.articleCoverOptional}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+              </label>
+            </>
+          )}
+
           {error && <p className="hint">{error}</p>}
           <button className="btn btn-primary" type="submit" disabled={busy}>
             {busy ? t.publishing : t.publish}
@@ -155,7 +243,16 @@ export default function AdminPostsPage() {
         <div className="admin-list">
           {posts.map((post) => (
             <div key={post.id} className={`admin-item ${post.hidden ? "is-hidden" : ""}`}>
-              {post.mediaType === "video" ? (
+              {post.mediaType === "text" ? (
+                post.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={post.imageUrl} alt="" />
+                ) : (
+                  <div className="admin-text-thumb" aria-hidden>
+                    ✎
+                  </div>
+                )
+              ) : post.mediaType === "video" ? (
                 <video src={post.imageUrl} muted playsInline preload="metadata" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -166,8 +263,15 @@ export default function AdminPostsPage() {
                   {post.mediaType === "video" && (
                     <span className="reel-badge">{t.reelBadge}</span>
                   )}{" "}
+                  {post.mediaType === "text" && (
+                    <span className="article-badge">{t.articleBadge}</span>
+                  )}{" "}
                   {post.hidden && <span className="hidden-badge">{t.hiddenBadge}</span>}{" "}
-                  {post.caption || t.noCaption}
+                  {post.caption
+                    ? post.caption.length > 140
+                      ? `${post.caption.slice(0, 140)}…`
+                      : post.caption
+                    : t.noCaption}
                 </p>
                 <small style={{ color: "var(--muted)" }}>
                   {new Date(post.createdAt).toLocaleString(locale)}

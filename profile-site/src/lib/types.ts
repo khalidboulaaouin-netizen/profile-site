@@ -24,12 +24,13 @@ export type Comment = {
 
 export type Post = {
   id: string;
-  /** Media URL (image or video under /uploads) */
+  /** Media URL (image/video) or optional cover for text articles */
   imageUrl: string;
-  /** image = photo post, video = reel-style clip */
-  mediaType: "image" | "video";
+  /** image = photo, video = reel, text = short/long written article */
+  mediaType: "image" | "video" | "text";
   /** When true, post stays in admin but is hidden from the public page */
   hidden: boolean;
+  /** Caption for media posts, or full article body for text posts */
   caption: string;
   createdAt: string;
   likes: number;

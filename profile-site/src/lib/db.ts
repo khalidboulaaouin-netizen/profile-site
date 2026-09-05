@@ -75,10 +75,18 @@ const defaultStore = (): Store => ({
   },
 });
 
+function normalizeMediaType(value: unknown): Post["mediaType"] {
+  if (value === "video") return "video";
+  if (value === "text") return "text";
+  return "image";
+}
+
 function normalizePost(post: Post): Post {
   return {
     ...post,
-    mediaType: post.mediaType === "video" ? "video" : "image",
+    imageUrl: post.imageUrl || "",
+    mediaType: normalizeMediaType(post.mediaType),
+    caption: post.caption || "",
     hidden: Boolean(post.hidden),
     likes: post.likes ?? 0,
     likedBy: Array.isArray(post.likedBy) ? post.likedBy : [],
@@ -320,15 +328,20 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
 export async function addPost(input: {
   imageUrl: string;
   caption: string;
-  mediaType?: "image" | "video";
+  mediaType?: "image" | "video" | "text";
 }): Promise<Post> {
   const store = await readStore();
+  const mediaType = normalizeMediaType(input.mediaType);
+  const caption =
+    mediaType === "text"
+      ? input.caption.trim().slice(0, 20000)
+      : input.caption.trim().slice(0, 2200);
   const post: Post = {
     id: randomUUID(),
-    imageUrl: input.imageUrl,
-    mediaType: input.mediaType === "video" ? "video" : "image",
+    imageUrl: mediaType === "text" ? input.imageUrl.trim() : input.imageUrl,
+    mediaType,
     hidden: false,
-    caption: input.caption,
+    caption,
     createdAt: new Date().toISOString(),
     likes: 0,
     likedBy: [],

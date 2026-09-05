@@ -62,12 +62,24 @@ export default async function HomePage() {
       url: store.profile.website || siteUrl,
       address: store.profile.location || undefined,
     },
-    hasPart: publicPosts.slice(0, 24).map((post) => ({
-      "@type": "ImageObject",
-      contentUrl: toAbsoluteUrl(post.imageUrl, siteUrl),
-      caption: post.caption || undefined,
-      datePublished: post.createdAt,
-    })),
+    hasPart: publicPosts.slice(0, 24).map((post) =>
+      post.mediaType === "text"
+        ? {
+            "@type": "Article",
+            headline: (post.caption || "").slice(0, 110) || store.profile.displayName,
+            articleBody: post.caption || undefined,
+            datePublished: post.createdAt,
+            image: post.imageUrl
+              ? toAbsoluteUrl(post.imageUrl, siteUrl)
+              : undefined,
+          }
+        : {
+            "@type": post.mediaType === "video" ? "VideoObject" : "ImageObject",
+            contentUrl: toAbsoluteUrl(post.imageUrl, siteUrl),
+            caption: post.caption || undefined,
+            datePublished: post.createdAt,
+          },
+    ),
   };
 
   return (

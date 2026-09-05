@@ -43,6 +43,15 @@ export type Dictionary = {
   signOut: string;
   publishPost: string;
   publishLede: string;
+  publishKind: string;
+  publishKindMedia: string;
+  publishKindText: string;
+  articleBody: string;
+  articlePlaceholder: string;
+  articleHelp: string;
+  articleCoverOptional: string;
+  articleBadge: string;
+  chooseArticleText: string;
   image: string;
   caption: string;
   publish: string;
@@ -272,7 +281,16 @@ const ar: Dictionary = {
   dashboardLede: "أنت الوحيد الذي يملك صلاحية النشر والتعديل هنا.",
   signOut: "تسجيل الخروج",
   publishPost: "نشر محتوى جديد",
-  publishLede: "أضف صوراً أو فيديوهات ريلز مع وصف. تظهر فوراً في صفحتك العامة.",
+  publishLede: "انشر صورة أو فيديو ريلز أو مقالاً كتابياً قصيراً أو طويلاً. يظهر فوراً في صفحتك العامة.",
+  publishKind: "نوع المنشور",
+  publishKindMedia: "صورة أو فيديو",
+  publishKindText: "مقال نصي",
+  articleBody: "نص المقال",
+  articlePlaceholder: "اكتب مقالك هنا… قصير أو طويل.",
+  articleHelp: "يمكنك نشر نص فقط، أو إضافة صورة غلاف اختيارية.",
+  articleCoverOptional: "صورة غلاف (اختياري)",
+  articleBadge: "مقال",
+  chooseArticleText: "اكتب نص المقال أولاً",
   image: "الصورة",
   caption: "الوصف",
   publish: "نشر",
@@ -507,7 +525,16 @@ const en: Dictionary = {
   dashboardLede: "You are the only one who can publish and edit here.",
   signOut: "Sign out",
   publishPost: "Publish new content",
-  publishLede: "Add photos or reel videos with captions. They appear instantly on your public page.",
+  publishLede: "Publish a photo, reel video, or a short/long written article. It appears instantly on your public page.",
+  publishKind: "Post type",
+  publishKindMedia: "Photo or video",
+  publishKindText: "Text article",
+  articleBody: "Article text",
+  articlePlaceholder: "Write your article here… short or long.",
+  articleHelp: "You can publish text only, or add an optional cover image.",
+  articleCoverOptional: "Cover image (optional)",
+  articleBadge: "Article",
+  chooseArticleText: "Write the article text first",
   image: "Image",
   caption: "Caption",
   publish: "Publish",

@@ -16,6 +16,12 @@ function getVisitorId() {
   return id;
 }
 
+function previewText(text: string, max = 120) {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max)}…`;
+}
+
 export function PostGrid({
   posts,
   labels,
@@ -43,6 +49,7 @@ export function PostGrid({
     | "delete"
     | "deleteCommentConfirm"
     | "reelBadge"
+    | "articleBadge"
   >;
   locale?: string;
   enableLikes?: boolean;
@@ -158,11 +165,26 @@ export function PostGrid({
           <button
             key={post.id}
             type="button"
-            className={`post-tile ${post.mediaType === "video" ? "is-reel" : ""}`}
+            className={`post-tile ${post.mediaType === "video" ? "is-reel" : ""} ${
+              post.mediaType === "text" ? "is-text" : ""
+            }`}
             style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
             onClick={() => setActiveId(post.id)}
           >
-            {post.mediaType === "video" ? (
+            {post.mediaType === "text" ? (
+              <>
+                {post.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={post.imageUrl} alt={post.caption || labels.postAlt} />
+                ) : null}
+                <span className="text-tile-preview">
+                  <span className="article-mark" aria-hidden>
+                    ✎
+                  </span>
+                  <span>{previewText(post.caption || labels.noCaption)}</span>
+                </span>
+              </>
+            ) : post.mediaType === "video" ? (
               <video
                 src={post.imageUrl}
                 muted
@@ -193,12 +215,23 @@ export function PostGrid({
       {active && (
         <div className="modal-backdrop" onClick={() => setActiveId(null)} role="presentation">
           <article
-            className={`modal-sheet ${active.mediaType === "video" ? "modal-reel" : ""}`}
+            className={`modal-sheet ${active.mediaType === "video" ? "modal-reel" : ""} ${
+              active.mediaType === "text" ? "modal-article" : ""
+            }`}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
           >
-            {active.mediaType === "video" ? (
+            {active.mediaType === "text" ? (
+              active.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={active.imageUrl} alt={active.caption || labels.postAlt} />
+              ) : (
+                <div className="article-cover-fallback" aria-hidden>
+                  ✎
+                </div>
+              )
+            ) : active.mediaType === "video" ? (
               <video
                 className="reel-player"
                 src={active.imageUrl}
@@ -215,7 +248,12 @@ export function PostGrid({
               {active.mediaType === "video" && (
                 <span className="reel-badge">{labels.reelBadge}</span>
               )}
-              <p>{active.caption || labels.noCaption}</p>
+              {active.mediaType === "text" && (
+                <span className="article-badge">{labels.articleBadge}</span>
+              )}
+              <p className={active.mediaType === "text" ? "article-body" : undefined}>
+                {active.caption || labels.noCaption}
+              </p>
               <time dateTime={active.createdAt}>
                 {new Date(active.createdAt).toLocaleDateString(locale, {
                   year: "numeric",

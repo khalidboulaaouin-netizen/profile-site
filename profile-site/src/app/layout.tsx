@@ -31,7 +31,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogImages = [
     store.profile.coverUrl,
     store.profile.avatarUrl,
-    ...store.posts.filter((p) => !p.hidden).slice(0, 4).map((p) => p.imageUrl),
+    ...store.posts
+      .filter((p) => !p.hidden && p.imageUrl)
+      .slice(0, 4)
+      .map((p) => p.imageUrl),
   ]
     .filter(Boolean)
     .map((url) => ({ url: toAbsoluteUrl(String(url), siteUrl) }));

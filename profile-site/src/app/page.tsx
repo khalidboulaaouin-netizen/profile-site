@@ -2,17 +2,21 @@ import { FollowButton } from "@/components/FollowButton";
 import { PostGrid } from "@/components/PostGrid";
 import { HighlightsRow, ProfileHeader } from "@/components/ProfileHeader";
 import { readStore } from "@/lib/db";
+import { getDictionary, normalizeLocale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const store = await readStore();
+  const locale = normalizeLocale(store.settings.language);
+  const t = getDictionary(locale);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     name: store.settings.siteTitle,
     description: store.settings.siteDescription,
+    inLanguage: locale,
     mainEntity: {
       "@type": "Person",
       name: store.profile.displayName,
@@ -36,20 +40,24 @@ export default async function HomePage() {
         brandName={store.settings.brandName}
         postsCount={store.posts.length}
         followersCount={store.followers.length}
-        followSlot={<FollowButton />}
+        labels={{
+          posts: t.posts,
+          followers: t.followers,
+          following: t.following,
+          highlights: t.highlights,
+        }}
+        followSlot={<FollowButton labels={t} locale={locale} />}
       />
 
-      <HighlightsRow highlights={store.highlights} />
+      <HighlightsRow highlights={store.highlights} label={t.highlights} />
 
       <div className="section-title">
-        <h2>المنشورات</h2>
+        <h2>{t.posts}</h2>
       </div>
 
-      <PostGrid posts={store.posts} />
+      <PostGrid posts={store.posts} labels={t} locale={locale} />
 
-      <p className="footer-note">
-        المتابعة عبر Google فقط · التحكم الكامل للمالك فقط · جاهز للفهرسة في Google
-      </p>
+      <p className="footer-note">{t.footerNote}</p>
     </main>
   );
 }

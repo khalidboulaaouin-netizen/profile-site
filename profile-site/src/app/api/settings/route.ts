@@ -31,6 +31,7 @@ export async function PATCH(request: Request) {
     allowFollow: body.allowFollow !== undefined ? Boolean(body.allowFollow) : undefined,
     brandName: body.brandName !== undefined ? String(body.brandName) : undefined,
     contactEmail: body.contactEmail !== undefined ? String(body.contactEmail) : undefined,
+    language: body.language !== undefined ? String(body.language) : undefined,
   });
 
   return NextResponse.json({ settings });

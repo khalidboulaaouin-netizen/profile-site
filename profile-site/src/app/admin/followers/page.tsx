@@ -2,30 +2,31 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { readStore } from "@/lib/db";
+import { getDictionary, normalizeLocale } from "@/lib/i18n";
 
 export default async function AdminFollowersPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== "admin") redirect("/login");
 
   const store = await readStore();
+  const locale = normalizeLocale(store.settings.language);
+  const t = getDictionary(locale);
 
   return (
     <main className="admin-page">
       <nav className="admin-nav">
-        <Link href="/admin">نظرة عامة</Link>
-        <Link href="/admin/posts">المنشورات</Link>
-        <Link href="/admin/settings">الإعدادات</Link>
+        <Link href="/admin">{t.overview}</Link>
+        <Link href="/admin/posts">{t.posts}</Link>
+        <Link href="/admin/settings">{t.settings}</Link>
         <Link href="/admin/followers" className="active">
-          المتابعون
+          {t.followers}
         </Link>
-        <Link href="/">عرض الصفحة</Link>
+        <Link href="/">{t.viewPage}</Link>
       </nav>
 
       <div className="panel">
-        <h1>المتابعون عبر Google</h1>
-        <p className="lede">
-          هؤلاء زوّار ضغطوا «متابعة عبر Google» فقط. لا يوجد تسجيل حساب مستقل لهم.
-        </p>
+        <h1>{t.followersTitle}</h1>
+        <p className="lede">{t.followersLede}</p>
 
         <div className="admin-list">
           {store.followers.map((f) => (
@@ -55,15 +56,14 @@ export default async function AdminFollowersPage() {
                 </small>
                 <div>
                   <small style={{ color: "var(--muted)" }}>
-                    منذ {new Date(f.followedAt).toLocaleString("ar")}
+                    {t.since}{" "}
+                    {new Date(f.followedAt).toLocaleString(locale)}
                   </small>
                 </div>
               </div>
             </div>
           ))}
-          {!store.followers.length && (
-            <p className="lede">لا متابعين بعد. فعّل Google OAuth ثم شارك رابط صفحتك.</p>
-          )}
+          {!store.followers.length && <p className="lede">{t.noFollowers}</p>}
         </div>
       </div>
     </main>

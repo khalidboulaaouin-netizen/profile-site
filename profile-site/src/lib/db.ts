@@ -44,14 +44,26 @@ const defaultStore = (): Store => ({
     allowFollow: true,
     brandName: "حضوري",
     contactEmail: "",
+    language: "ar",
   },
 });
+
+function normalizeStore(store: Store): Store {
+  return {
+    ...store,
+    settings: {
+      ...defaultStore().settings,
+      ...store.settings,
+      language: store.settings?.language || "ar",
+    },
+  };
+}
 
 async function ensureStore(): Promise<Store> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   try {
     const raw = await fs.readFile(STORE_PATH, "utf8");
-    return JSON.parse(raw) as Store;
+    return normalizeStore(JSON.parse(raw) as Store);
   } catch {
     const store = defaultStore();
     await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
@@ -70,14 +82,24 @@ export async function writeStore(store: Store): Promise<void> {
 
 export async function updateProfile(patch: Partial<Profile>): Promise<Profile> {
   const store = await readStore();
-  store.profile = { ...store.profile, ...patch };
+  const clean = Object.fromEntries(
+    Object.entries(patch).filter(([, value]) => value !== undefined),
+  ) as Partial<Profile>;
+  store.profile = { ...store.profile, ...clean };
   await writeStore(store);
   return store.profile;
 }
 
 export async function updateSettings(patch: Partial<SiteSettings>): Promise<SiteSettings> {
   const store = await readStore();
-  store.settings = { ...store.settings, ...patch };
+  const clean = Object.fromEntries(
+    Object.entries(patch).filter(([, value]) => value !== undefined),
+  ) as Partial<SiteSettings>;
+  store.settings = {
+    ...defaultStore().settings,
+    ...store.settings,
+    ...clean,
+  };
   await writeStore(store);
   return store.settings;
 }

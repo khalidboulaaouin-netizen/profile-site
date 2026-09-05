@@ -99,6 +99,7 @@ const store = {
     allowFollow: true,
     brandName: "حضوري",
     contactEmail: "",
+    language: "ar",
   },
 };
 

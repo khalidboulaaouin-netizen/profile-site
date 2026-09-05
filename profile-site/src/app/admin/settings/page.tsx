@@ -2,23 +2,27 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Highlight, Profile, SiteSettings } from "@/lib/types";
+import { LOCALES, getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
 async function uploadFile(file: File): Promise<string> {
   const body = new FormData();
   body.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "فشل الرفع");
+  if (!res.ok) throw new Error(data.error || "Upload failed");
   return data.url as string;
 }
 
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [t, setT] = useState<Dictionary>(() => getDictionary("ar"));
 
   useEffect(() => {
     Promise.all([
@@ -28,6 +32,7 @@ export default function AdminSettingsPage() {
       setProfile(p.profile);
       setSettings(s.settings);
       setHighlights(s.highlights || []);
+      setT(getDictionary(s.settings?.language));
     });
   }, []);
 
@@ -42,7 +47,7 @@ export default function AdminSettingsPage() {
       body: JSON.stringify(profile),
     });
     setBusy(false);
-    setMessage(res.ok ? "تم حفظ الملف الشخصي." : "تعذّر الحفظ.");
+    setMessage(res.ok ? t.savedProfile : t.saveFailed);
   }
 
   async function saveSettings(e: FormEvent) {
@@ -50,11 +55,13 @@ export default function AdminSettingsPage() {
     if (!settings) return;
     setBusy(true);
     setMessage("");
+    const nextLanguage = normalizeLocale(settings.language);
     const res = await fetch("/api/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...settings,
+        language: nextLanguage,
         seoKeywords:
           typeof settings.seoKeywords === "string"
             ? String(settings.seoKeywords)
@@ -65,7 +72,16 @@ export default function AdminSettingsPage() {
       }),
     });
     setBusy(false);
-    setMessage(res.ok ? "تم حفظ إعدادات الموقع وSEO." : "تعذّر الحفظ.");
+    if (res.ok) {
+      const dict = getDictionary(nextLanguage);
+      setT(dict);
+      setMessage(dict.savedSettings);
+      router.refresh();
+      // Reload so <html lang/dir> updates for the whole app
+      window.setTimeout(() => window.location.reload(), 400);
+    } else {
+      setMessage(t.saveFailed);
+    }
   }
 
   async function saveHighlights(e: FormEvent) {
@@ -78,13 +94,13 @@ export default function AdminSettingsPage() {
       body: JSON.stringify({ highlights }),
     });
     setBusy(false);
-    setMessage(res.ok ? "تم حفظ أبرز اللحظات." : "تعذّر الحفظ.");
+    setMessage(res.ok ? t.savedHighlights : t.saveFailed);
   }
 
   if (!profile || !settings) {
     return (
       <main className="admin-page">
-        <div className="panel">تحميل الإعدادات...</div>
+        <div className="panel">{t.loadingSettings}</div>
       </main>
     );
   }
@@ -92,13 +108,13 @@ export default function AdminSettingsPage() {
   return (
     <main className="admin-page">
       <nav className="admin-nav">
-        <Link href="/admin">نظرة عامة</Link>
-        <Link href="/admin/posts">المنشورات</Link>
+        <Link href="/admin">{t.overview}</Link>
+        <Link href="/admin/posts">{t.posts}</Link>
         <Link href="/admin/settings" className="active">
-          الإعدادات
+          {t.settings}
         </Link>
-        <Link href="/admin/followers">المتابعون</Link>
-        <Link href="/">عرض الصفحة</Link>
+        <Link href="/admin/followers">{t.followers}</Link>
+        <Link href="/">{t.viewPage}</Link>
       </nav>
 
       {message && (
@@ -108,18 +124,18 @@ export default function AdminSettingsPage() {
       )}
 
       <div className="panel">
-        <h1>الملف الشخصي</h1>
-        <p className="lede">الاسم، البايو، الصورة، والغلاف — كما في إنستغرام.</p>
+        <h1>{t.profileSection}</h1>
+        <p className="lede">{t.profileLede}</p>
         <form className="form-stack" onSubmit={saveProfile}>
           <label>
-            الاسم الظاهر
+            {t.displayName}
             <input
               value={profile.displayName}
               onChange={(e) => setProfile({ ...profile, displayName: e.target.value })}
             />
           </label>
           <label>
-            اسم المستخدم
+            {t.username}
             <input
               value={profile.username}
               onChange={(e) => setProfile({ ...profile, username: e.target.value })}
@@ -127,21 +143,21 @@ export default function AdminSettingsPage() {
             />
           </label>
           <label>
-            النبذة
+            {t.bio}
             <textarea
               value={profile.bio}
               onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
             />
           </label>
           <label>
-            الموقع
+            {t.location}
             <input
               value={profile.location}
               onChange={(e) => setProfile({ ...profile, location: e.target.value })}
             />
           </label>
           <label>
-            الموقع الإلكتروني
+            {t.website}
             <input
               value={profile.website}
               onChange={(e) => setProfile({ ...profile, website: e.target.value })}
@@ -149,7 +165,7 @@ export default function AdminSettingsPage() {
             />
           </label>
           <label>
-            صورة الملف
+            {t.avatar}
             <input
               type="file"
               accept="image/*"
@@ -162,7 +178,7 @@ export default function AdminSettingsPage() {
             />
           </label>
           <label>
-            صورة الغلاف
+            {t.cover}
             <input
               type="file"
               accept="image/*"
@@ -175,41 +191,54 @@ export default function AdminSettingsPage() {
             />
           </label>
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            حفظ الملف الشخصي
+            {t.saveProfile}
           </button>
         </form>
       </div>
 
       <div className="panel" style={{ marginTop: "1rem" }}>
-        <h2>إعدادات الموقع وGoogle</h2>
-        <p className="lede">
-          هذه الحقول تساعد Google على فهرسة صفحتك. بعد النشر على نطاقك، أضف الموقع في Google
-          Search Console.
-        </p>
+        <h2>{t.siteSettings}</h2>
+        <p className="lede">{t.siteSettingsLede}</p>
         <form className="form-stack" onSubmit={saveSettings}>
           <label>
-            اسم العلامة
+            {t.language}
+            <select
+              value={normalizeLocale(settings.language)}
+              onChange={(e) => setSettings({ ...settings, language: e.target.value })}
+            >
+              {LOCALES.map((locale) => (
+                <option key={locale.code} value={locale.code}>
+                  {locale.nativeName} ({locale.name})
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="lede" style={{ marginTop: "-0.35rem" }}>
+            {t.languageHelp}
+          </p>
+          <label>
+            {t.brandName}
             <input
               value={settings.brandName}
               onChange={(e) => setSettings({ ...settings, brandName: e.target.value })}
             />
           </label>
           <label>
-            عنوان الصفحة (SEO)
+            {t.siteTitle}
             <input
               value={settings.siteTitle}
               onChange={(e) => setSettings({ ...settings, siteTitle: e.target.value })}
             />
           </label>
           <label>
-            وصف Google
+            {t.siteDescription}
             <textarea
               value={settings.siteDescription}
               onChange={(e) => setSettings({ ...settings, siteDescription: e.target.value })}
             />
           </label>
           <label>
-            كلمات مفتاحية (مفصولة بفاصلة)
+            {t.seoKeywords}
             <input
               value={settings.seoKeywords.join(", ")}
               onChange={(e) =>
@@ -229,21 +258,21 @@ export default function AdminSettingsPage() {
               checked={settings.allowFollow}
               onChange={(e) => setSettings({ ...settings, allowFollow: e.target.checked })}
             />
-            السماح بالمتابعة عبر Google
+            {t.allowFollow}
           </label>
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            حفظ إعدادات SEO
+            {t.saveSeo}
           </button>
         </form>
       </div>
 
       <div className="panel" style={{ marginTop: "1rem" }}>
-        <h2>أبرز اللحظات</h2>
+        <h2>{t.highlightsSection}</h2>
         <form className="form-stack" onSubmit={saveHighlights}>
           {highlights.map((h, idx) => (
             <div key={h.id} className="form-stack" style={{ paddingBottom: "0.75rem" }}>
               <label>
-                العنوان
+                {t.highlightTitle}
                 <input
                   value={h.title}
                   onChange={(e) => {
@@ -254,7 +283,7 @@ export default function AdminSettingsPage() {
                 />
               </label>
               <label>
-                صورة الغلاف
+                {t.highlightCover}
                 <input
                   type="file"
                   accept="image/*"
@@ -271,7 +300,7 @@ export default function AdminSettingsPage() {
             </div>
           ))}
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            حفظ أبرز اللحظات
+            {t.saveHighlights}
           </button>
         </form>
       </div>

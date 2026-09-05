@@ -435,13 +435,18 @@ textarea {
 }
 
 .form-stack input,
-.form-stack textarea {
+.form-stack textarea,
+.form-stack select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0.75rem 0.9rem;
   background: white;
   color: var(--ink);
+}
+
+.form-stack select {
+  cursor: pointer;
 }
 
 .form-stack textarea {

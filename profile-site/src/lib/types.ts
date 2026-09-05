@@ -39,6 +39,8 @@ export type SiteSettings = {
   allowFollow: boolean;
   brandName: string;
   contactEmail: string;
+  /** UI language for public page + admin panel */
+  language: string;
 };
 
 export type Store = {

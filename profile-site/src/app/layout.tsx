@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { readStore } from "@/lib/db";
+import { getLocaleMeta, getOgLocale } from "@/lib/i18n";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: store.profile.displayName }],
     openGraph: {
       type: "profile",
-      locale: "ar_AR",
+      locale: getOgLocale(store.settings.language),
       title,
       description,
       siteName: store.settings.brandName,
@@ -62,13 +63,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const store = await readStore();
+  const locale = getLocaleMeta(store.settings.language);
+
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={locale.code} dir={locale.dir}>
       <body className={`${cairo.variable} ${ibm.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>

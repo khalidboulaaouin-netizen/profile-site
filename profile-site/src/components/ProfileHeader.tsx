@@ -6,12 +6,19 @@ export function ProfileHeader({
   postsCount,
   followersCount,
   followSlot,
+  labels,
 }: {
   profile: Profile;
   brandName: string;
   postsCount: number;
   followersCount: number;
   followSlot: React.ReactNode;
+  labels: {
+    posts: string;
+    followers: string;
+    following: string;
+    highlights: string;
+  };
 }) {
   const initial = (profile.displayName || brandName).slice(0, 1);
 
@@ -57,15 +64,15 @@ export function ProfileHeader({
 
         <dl className="stats">
           <div>
-            <dt>منشورات</dt>
+            <dt>{labels.posts}</dt>
             <dd>{postsCount}</dd>
           </div>
           <div>
-            <dt>متابعون</dt>
+            <dt>{labels.followers}</dt>
             <dd>{followersCount}</dd>
           </div>
           <div>
-            <dt>يتابع</dt>
+            <dt>{labels.following}</dt>
             <dd>0</dd>
           </div>
         </dl>
@@ -74,11 +81,17 @@ export function ProfileHeader({
   );
 }
 
-export function HighlightsRow({ highlights }: { highlights: Highlight[] }) {
+export function HighlightsRow({
+  highlights,
+  label,
+}: {
+  highlights: Highlight[];
+  label: string;
+}) {
   if (!highlights.length) return null;
 
   return (
-    <section className="highlights" aria-label="أبرز اللحظات">
+    <section className="highlights" aria-label={label}>
       {highlights.map((item, index) => (
         <div
           key={item.id}

@@ -11,68 +11,61 @@
   },
   "posts": [
     {
-      "id": "ec55d150-8156-4198-a9dc-9fa737aa153e",
-      "imageUrl": "/uploads/demo-1.svg",
-      "caption": "منشور تجريبي من لوحة التحكم",
-      "createdAt": "2026-09-05T00:47:43.637Z",
-      "likes": 0
-    },
-    {
-      "id": "23cebc9b-c0a4-4e7f-8488-4950a00235e1",
+      "id": "311f0100-0196-4345-8bc5-792b9fcaf512",
       "imageUrl": "/uploads/demo-1.svg",
       "caption": "لحظة صباح هادئة",
-      "createdAt": "2026-09-05T00:44:56.358Z",
+      "createdAt": "2026-09-05T02:34:31.697Z",
       "likes": 12
     },
     {
-      "id": "f26f7026-0246-475a-9565-3432de9e0d3f",
+      "id": "4102c6b6-bc5e-40b2-be5b-834a52a851f2",
       "imageUrl": "/uploads/demo-2.svg",
       "caption": "تفاصيل يومية",
-      "createdAt": "2026-09-04T00:44:56.359Z",
+      "createdAt": "2026-09-04T02:34:31.697Z",
       "likes": 11
     },
     {
-      "id": "a1f1653c-f7a4-4d48-96a3-d0a39a0afad8",
+      "id": "808e8a38-88eb-4eae-9fae-c6b4ae145034",
       "imageUrl": "/uploads/demo-3.svg",
       "caption": "ضوء المساء",
-      "createdAt": "2026-09-03T00:44:56.359Z",
+      "createdAt": "2026-09-03T02:34:31.697Z",
       "likes": 10
     },
     {
-      "id": "775466ca-2ebd-461f-a1c3-070a0ecfa2f0",
+      "id": "30e4adb7-12d2-4dbe-b66b-7596452cacc9",
       "imageUrl": "/uploads/demo-4.svg",
       "caption": "من مساحة العمل",
-      "createdAt": "2026-09-02T00:44:56.359Z",
+      "createdAt": "2026-09-02T02:34:31.697Z",
       "likes": 9
     },
     {
-      "id": "98a12312-b26a-44be-8a9f-7dcba8b6af93",
+      "id": "2eac9b8d-9dfa-490f-ac32-352a5e704ab2",
       "imageUrl": "/uploads/demo-5.svg",
       "caption": "مشهد عابر",
-      "createdAt": "2026-09-01T00:44:56.359Z",
+      "createdAt": "2026-09-01T02:34:31.697Z",
       "likes": 8
     },
     {
-      "id": "ec8123cd-8e69-4647-a43d-9e43ea6f5b82",
+      "id": "2d95d9e2-9328-4760-a2e6-e55c0ba75d17",
       "imageUrl": "/uploads/demo-6.svg",
       "caption": "نهاية الأسبوع",
-      "createdAt": "2026-08-31T00:44:56.359Z",
+      "createdAt": "2026-08-31T02:34:31.697Z",
       "likes": 7
     }
   ],
   "highlights": [
     {
-      "id": "94ce2fa9-f37d-4831-bb2c-d1bd860eecae",
+      "id": "67473a96-9bdc-4f81-93ab-902b527f065a",
       "title": "لحظات",
       "coverUrl": "/uploads/highlight-1.svg"
     },
     {
-      "id": "7d55ff3d-d891-4434-845e-759d9e427024",
+      "id": "edd9d630-d905-472a-b7e4-cfd17bc28528",
       "title": "سفر",
       "coverUrl": "/uploads/highlight-2.svg"
     },
     {
-      "id": "e76a8e20-3b25-4fbb-85fe-0c9da7ff6d2f",
+      "id": "73e793f7-626c-41fb-a866-c50fa854562b",
       "title": "أعمال",
       "coverUrl": "/uploads/highlight-3.svg"
     }
@@ -90,6 +83,7 @@
     ],
     "allowFollow": true,
     "brandName": "حضوري",
-    "contactEmail": ""
+    "contactEmail": "",
+    "language": "ar"
   }
 }

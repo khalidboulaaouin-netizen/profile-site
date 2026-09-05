@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import type { Post } from "@/lib/types";
+import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
 async function uploadFile(file: File): Promise<string> {
   const body = new FormData();
   body.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "فشل الرفع");
+  if (!res.ok) throw new Error(data.error || "Upload failed");
   return data.url as string;
 }
 
@@ -19,6 +20,8 @@ export default function AdminPostsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [locale, setLocale] = useState("ar");
+  const [t, setT] = useState<Dictionary>(() => getDictionary("ar"));
 
   const load = () =>
     fetch("/api/posts")
@@ -27,12 +30,20 @@ export default function AdminPostsPage() {
 
   useEffect(() => {
     load();
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => {
+        const next = normalizeLocale(d.settings?.language);
+        setLocale(next);
+        setT(getDictionary(next));
+      })
+      .catch(() => undefined);
   }, []);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     if (!file) {
-      setError("اختر صورة للمنشور");
+      setError(t.chooseImage);
       return;
     }
     setBusy(true);
@@ -46,20 +57,20 @@ export default function AdminPostsPage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "فشل النشر");
+        throw new Error(data.error || t.saveFailed);
       }
       setCaption("");
       setFile(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "خطأ غير متوقع");
+      setError(err instanceof Error ? err.message : t.saveFailed);
     } finally {
       setBusy(false);
     }
   }
 
   async function onDelete(id: string) {
-    if (!confirm("حذف هذا المنشور؟")) return;
+    if (!confirm(t.delete)) return;
     await fetch(`/api/posts?id=${id}`, { method: "DELETE" });
     await load();
   }
@@ -67,22 +78,22 @@ export default function AdminPostsPage() {
   return (
     <main className="admin-page">
       <nav className="admin-nav">
-        <Link href="/admin">نظرة عامة</Link>
+        <Link href="/admin">{t.overview}</Link>
         <Link href="/admin/posts" className="active">
-          المنشورات
+          {t.posts}
         </Link>
-        <Link href="/admin/settings">الإعدادات</Link>
-        <Link href="/admin/followers">المتابعون</Link>
-        <Link href="/">عرض الصفحة</Link>
+        <Link href="/admin/settings">{t.settings}</Link>
+        <Link href="/admin/followers">{t.followers}</Link>
+        <Link href="/">{t.viewPage}</Link>
       </nav>
 
       <div className="panel">
-        <h1>نشر محتوى جديد</h1>
-        <p className="lede">أضف صوراً مع وصف كما في إنستغرام. تظهر فوراً في صفحتك العامة.</p>
+        <h1>{t.publishPost}</h1>
+        <p className="lede">{t.publishLede}</p>
 
         <form className="form-stack" onSubmit={onCreate}>
           <label>
-            الصورة
+            {t.image}
             <input
               type="file"
               accept="image/*"
@@ -91,37 +102,37 @@ export default function AdminPostsPage() {
             />
           </label>
           <label>
-            الوصف
+            {t.caption}
             <textarea value={caption} onChange={(e) => setCaption(e.target.value)} />
           </label>
           {error && <p className="hint">{error}</p>}
           <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? "جارٍ النشر..." : "نشر"}
+            {busy ? t.publishing : t.publish}
           </button>
         </form>
       </div>
 
       <div className="panel" style={{ marginTop: "1rem" }}>
-        <h2>المنشورات الحالية</h2>
+        <h2>{t.currentPosts}</h2>
         <div className="admin-list">
           {posts.map((post) => (
             <div key={post.id} className="admin-item">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={post.imageUrl} alt="" />
               <div>
-                <p style={{ margin: 0 }}>{post.caption || "بدون وصف"}</p>
+                <p style={{ margin: 0 }}>{post.caption || t.noCaption}</p>
                 <small style={{ color: "var(--muted)" }}>
-                  {new Date(post.createdAt).toLocaleString("ar")}
+                  {new Date(post.createdAt).toLocaleString(locale)}
                 </small>
               </div>
               <div className="actions">
                 <button className="btn btn-ghost" type="button" onClick={() => onDelete(post.id)}>
-                  حذف
+                  {t.delete}
                 </button>
               </div>
             </div>
           ))}
-          {!posts.length && <p className="lede">لا منشورات بعد.</p>}
+          {!posts.length && <p className="lede">{t.noPostsYet}</p>}
         </div>
       </div>
     </main>

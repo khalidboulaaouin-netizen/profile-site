@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
+import type { Dictionary } from "@/lib/i18n";
 
 type FollowState = {
   count: number;
@@ -10,7 +11,19 @@ type FollowState = {
   allowFollow: boolean;
 };
 
-export function FollowButton() {
+export function FollowButton({
+  labels,
+}: {
+  labels: Pick<
+    Dictionary,
+    | "followGoogle"
+    | "unfollow"
+    | "followerSignOut"
+    | "loading"
+    | "enableGoogleFirst"
+  >;
+  locale?: string;
+}) {
   const { data: session, status } = useSession();
   const [state, setState] = useState<FollowState | null>(null);
   const [pending, startTransition] = useTransition();
@@ -32,7 +45,7 @@ export function FollowButton() {
     setMessage("");
     startTransition(async () => {
       if (!state?.googleConfigured) {
-        setMessage("فعّل تسجيل Google أولاً من إعدادات المالك.");
+        setMessage(labels.enableGoogleFirst);
         return;
       }
 
@@ -64,7 +77,7 @@ export function FollowButton() {
 
   if (!state?.allowFollow) return null;
 
-  const label = state?.following ? "إلغاء المتابعة" : "متابعة عبر Google";
+  const label = state?.following ? labels.unfollow : labels.followGoogle;
 
   return (
     <div className="follow-block">
@@ -74,7 +87,7 @@ export function FollowButton() {
         onClick={handleFollow}
         disabled={pending || status === "loading"}
       >
-        {pending ? "جارٍ..." : label}
+        {pending ? labels.loading : label}
       </button>
       {session?.user?.role === "follower" && (
         <button
@@ -82,7 +95,7 @@ export function FollowButton() {
           className="btn-text"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
-          تسجيل خروج المتابع
+          {labels.followerSignOut}
         </button>
       )}
       {message && <p className="hint">{message}</p>}

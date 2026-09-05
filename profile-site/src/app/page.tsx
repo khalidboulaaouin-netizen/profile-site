@@ -40,11 +40,14 @@ export default async function HomePage() {
         brandName={store.settings.brandName}
         postsCount={store.posts.length}
         followersCount={store.followers.length}
+        verified={store.settings.verified}
+        hideFollowers={store.settings.hideFollowers}
         labels={{
           posts: t.posts,
           followers: t.followers,
           following: t.following,
           highlights: t.highlights,
+          verifiedLabel: t.verifiedLabel,
         }}
         followSlot={<FollowButton labels={t} locale={locale} />}
       />
@@ -55,7 +58,13 @@ export default async function HomePage() {
         <h2>{t.posts}</h2>
       </div>
 
-      <PostGrid posts={store.posts} labels={t} locale={locale} />
+      <PostGrid
+        posts={store.posts}
+        labels={t}
+        locale={locale}
+        enableLikes={store.settings.enableLikes}
+        enableComments={store.settings.enableComments}
+      />
 
       <p className="footer-note">{t.footerNote}</p>
     </main>

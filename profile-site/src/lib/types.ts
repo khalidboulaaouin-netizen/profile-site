@@ -9,12 +9,21 @@ export type Profile = {
   emailPublic: string;
 };
 
+export type Comment = {
+  id: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+};
+
 export type Post = {
   id: string;
   imageUrl: string;
   caption: string;
   createdAt: string;
   likes: number;
+  likedBy: string[];
+  comments: Comment[];
 };
 
 export type Highlight = {
@@ -41,6 +50,14 @@ export type SiteSettings = {
   contactEmail: string;
   /** UI language for public page + admin panel */
   language: string;
+  /** Blue verification badge next to the name */
+  verified: boolean;
+  /** Hide followers count on the public page */
+  hideFollowers: boolean;
+  /** Show hearts and allow liking posts */
+  enableLikes: boolean;
+  /** Show comments and allow writing comments */
+  enableComments: boolean;
 };
 
 export type Store = {

@@ -46,6 +46,8 @@ const files = colors.map(([a, b], i) => {
     caption: captions[i],
     createdAt: new Date(Date.now() - i * 86400000).toISOString(),
     likes: 12 - i,
+    likedBy: [],
+    comments: [],
   };
 });
 
@@ -100,6 +102,10 @@ const store = {
     brandName: "حضوري",
     contactEmail: "",
     language: "ar",
+    verified: true,
+    hideFollowers: false,
+    enableLikes: true,
+    enableComments: true,
   },
 };
 

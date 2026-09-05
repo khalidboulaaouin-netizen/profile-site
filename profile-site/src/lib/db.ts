@@ -45,16 +45,34 @@ const defaultStore = (): Store => ({
     brandName: "حضوري",
     contactEmail: "",
     language: "ar",
+    verified: true,
+    hideFollowers: false,
+    enableLikes: true,
+    enableComments: true,
   },
 });
+
+function normalizePost(post: Post): Post {
+  return {
+    ...post,
+    likes: post.likes ?? 0,
+    likedBy: Array.isArray(post.likedBy) ? post.likedBy : [],
+    comments: Array.isArray(post.comments) ? post.comments : [],
+  };
+}
 
 function normalizeStore(store: Store): Store {
   return {
     ...store,
+    posts: (store.posts || []).map(normalizePost),
     settings: {
       ...defaultStore().settings,
       ...store.settings,
       language: store.settings?.language || "ar",
+      verified: store.settings?.verified ?? true,
+      hideFollowers: store.settings?.hideFollowers ?? false,
+      enableLikes: store.settings?.enableLikes ?? true,
+      enableComments: store.settings?.enableComments ?? true,
     },
   };
 }
@@ -115,8 +133,74 @@ export async function addPost(input: {
     caption: input.caption,
     createdAt: new Date().toISOString(),
     likes: 0,
+    likedBy: [],
+    comments: [],
   };
   store.posts = [post, ...store.posts];
+  await writeStore(store);
+  return post;
+}
+
+export async function toggleLike(
+  postId: string,
+  visitorId: string,
+): Promise<{ post: Post; liked: boolean } | null> {
+  const store = await readStore();
+  if (!store.settings.enableLikes) return null;
+  const idx = store.posts.findIndex((p) => p.id === postId);
+  if (idx === -1) return null;
+
+  const post = normalizePost(store.posts[idx]);
+  const liked = post.likedBy.includes(visitorId);
+  if (liked) {
+    post.likedBy = post.likedBy.filter((id) => id !== visitorId);
+  } else {
+    post.likedBy = [...post.likedBy, visitorId];
+  }
+  post.likes = post.likedBy.length;
+  store.posts[idx] = post;
+  await writeStore(store);
+  return { post, liked: !liked };
+}
+
+export async function addComment(
+  postId: string,
+  input: { authorName: string; text: string },
+): Promise<Post | null> {
+  const store = await readStore();
+  if (!store.settings.enableComments) return null;
+  const idx = store.posts.findIndex((p) => p.id === postId);
+  if (idx === -1) return null;
+
+  const post = normalizePost(store.posts[idx]);
+  const authorName = input.authorName.trim().slice(0, 60);
+  const text = input.text.trim().slice(0, 500);
+  if (!authorName || !text) return null;
+
+  post.comments = [
+    ...post.comments,
+    {
+      id: randomUUID(),
+      authorName,
+      text,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+  store.posts[idx] = post;
+  await writeStore(store);
+  return post;
+}
+
+export async function deleteComment(
+  postId: string,
+  commentId: string,
+): Promise<Post | null> {
+  const store = await readStore();
+  const idx = store.posts.findIndex((p) => p.id === postId);
+  if (idx === -1) return null;
+  const post = normalizePost(store.posts[idx]);
+  post.comments = post.comments.filter((c) => c.id !== commentId);
+  store.posts[idx] = post;
   await writeStore(store);
   return post;
 }

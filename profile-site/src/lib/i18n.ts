@@ -85,6 +85,22 @@ export type Dictionary = {
   saveFailed: string;
   loadingSettings: string;
   uploadFailed: string;
+  verified: string;
+  hideFollowers: string;
+  enableLikes: string;
+  enableComments: string;
+  privacySection: string;
+  privacyLede: string;
+  like: string;
+  unlike: string;
+  likesCount: string;
+  comments: string;
+  addComment: string;
+  commentName: string;
+  commentText: string;
+  sendComment: string;
+  noComments: string;
+  verifiedLabel: string;
 };
 
 const ar: Dictionary = {
@@ -161,6 +177,22 @@ const ar: Dictionary = {
   saveFailed: "تعذّر الحفظ.",
   loadingSettings: "تحميل الإعدادات...",
   uploadFailed: "فشل الرفع",
+  verified: "توثيق الصفحة بالعلامة الزرقاء",
+  hideFollowers: "إخفاء عدد المتابعين عن الزوار",
+  enableLikes: "إظهار القلوب والسماح بالإعجاب",
+  enableComments: "إظهار التعليقات والسماح بالكتابة",
+  privacySection: "التحكم بالظهور والتفاعل",
+  privacyLede: "تحكّم بما يظهر للزوار: التوثيق، المتابعون، القلوب، والتعليقات.",
+  like: "إعجاب",
+  unlike: "إزالة الإعجاب",
+  likesCount: "إعجاب",
+  comments: "التعليقات",
+  addComment: "أضف تعليقاً",
+  commentName: "اسمك",
+  commentText: "اكتب تعليقاً...",
+  sendComment: "إرسال",
+  noComments: "لا تعليقات بعد.",
+  verifiedLabel: "حساب موثّق",
 };
 
 const en: Dictionary = {
@@ -237,6 +269,22 @@ const en: Dictionary = {
   saveFailed: "Could not save.",
   loadingSettings: "Loading settings...",
   uploadFailed: "Upload failed",
+  verified: "Verify page with blue badge",
+  hideFollowers: "Hide follower count from visitors",
+  enableLikes: "Show hearts and allow likes",
+  enableComments: "Show comments and allow writing",
+  privacySection: "Visibility & interaction",
+  privacyLede: "Control what visitors see: verification, followers, hearts, and comments.",
+  like: "Like",
+  unlike: "Unlike",
+  likesCount: "likes",
+  comments: "Comments",
+  addComment: "Add a comment",
+  commentName: "Your name",
+  commentText: "Write a comment...",
+  sendComment: "Send",
+  noComments: "No comments yet.",
+  verifiedLabel: "Verified account",
 };
 
 const fr: Dictionary = {

@@ -267,6 +267,48 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="panel" style={{ marginTop: "1rem" }}>
+        <h2>{t.privacySection}</h2>
+        <p className="lede">{t.privacyLede}</p>
+        <form className="form-stack" onSubmit={saveSettings}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
+              checked={Boolean(settings.verified)}
+              onChange={(e) => setSettings({ ...settings, verified: e.target.checked })}
+            />
+            {t.verified}
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
+              checked={Boolean(settings.hideFollowers)}
+              onChange={(e) => setSettings({ ...settings, hideFollowers: e.target.checked })}
+            />
+            {t.hideFollowers}
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
+              checked={settings.enableLikes !== false}
+              onChange={(e) => setSettings({ ...settings, enableLikes: e.target.checked })}
+            />
+            {t.enableLikes}
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
+              checked={settings.enableComments !== false}
+              onChange={(e) => setSettings({ ...settings, enableComments: e.target.checked })}
+            />
+            {t.enableComments}
+          </label>
+          <button className="btn btn-primary" type="submit" disabled={busy}>
+            {t.saveSeo}
+          </button>
+        </form>
+      </div>
+
+      <div className="panel" style={{ marginTop: "1rem" }}>
         <h2>{t.highlightsSection}</h2>
         <form className="form-stack" onSubmit={saveHighlights}>
           {highlights.map((h, idx) => (

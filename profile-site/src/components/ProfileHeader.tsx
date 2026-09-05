@@ -1,5 +1,19 @@
 import type { Highlight, Profile } from "@/lib/types";
 
+export function VerifiedBadge({ label }: { label: string }) {
+  return (
+    <span className="verified-badge" title={label} aria-label={label}>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <circle cx="12" cy="12" r="12" fill="#1d9bf0" />
+        <path
+          d="M10.2 15.8 6.8 12.4l1.4-1.4 2 2 5-5 1.4 1.4-6.4 6.4z"
+          fill="#fff"
+        />
+      </svg>
+    </span>
+  );
+}
+
 export function ProfileHeader({
   profile,
   brandName,
@@ -7,6 +21,8 @@ export function ProfileHeader({
   followersCount,
   followSlot,
   labels,
+  verified = false,
+  hideFollowers = false,
 }: {
   profile: Profile;
   brandName: string;
@@ -18,7 +34,10 @@ export function ProfileHeader({
     followers: string;
     following: string;
     highlights: string;
+    verifiedLabel: string;
   };
+  verified?: boolean;
+  hideFollowers?: boolean;
 }) {
   const initial = (profile.displayName || brandName).slice(0, 1);
 
@@ -47,7 +66,10 @@ export function ProfileHeader({
           </div>
 
           <div className="identity-copy">
-            <h1>{profile.displayName}</h1>
+            <h1 className="name-row">
+              <span>{profile.displayName}</span>
+              {verified && <VerifiedBadge label={labels.verifiedLabel} />}
+            </h1>
             <p className="username">@{profile.username}</p>
             <p className="bio">{profile.bio}</p>
             <div className="meta-line">
@@ -67,10 +89,12 @@ export function ProfileHeader({
             <dt>{labels.posts}</dt>
             <dd>{postsCount}</dd>
           </div>
-          <div>
-            <dt>{labels.followers}</dt>
-            <dd>{followersCount}</dd>
-          </div>
+          {!hideFollowers && (
+            <div>
+              <dt>{labels.followers}</dt>
+              <dd>{followersCount}</dd>
+            </div>
+          )}
           <div>
             <dt>{labels.following}</dt>
             <dd>0</dd>

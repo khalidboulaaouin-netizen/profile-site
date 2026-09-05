@@ -32,6 +32,11 @@ export async function PATCH(request: Request) {
     brandName: body.brandName !== undefined ? String(body.brandName) : undefined,
     contactEmail: body.contactEmail !== undefined ? String(body.contactEmail) : undefined,
     language: body.language !== undefined ? String(body.language) : undefined,
+    verified: body.verified !== undefined ? Boolean(body.verified) : undefined,
+    hideFollowers: body.hideFollowers !== undefined ? Boolean(body.hideFollowers) : undefined,
+    enableLikes: body.enableLikes !== undefined ? Boolean(body.enableLikes) : undefined,
+    enableComments:
+      body.enableComments !== undefined ? Boolean(body.enableComments) : undefined,
   });
 
   return NextResponse.json({ settings });

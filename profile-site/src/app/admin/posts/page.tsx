@@ -6,16 +6,26 @@ import { upload } from "@vercel/blob/client";
 import type { Post } from "@/lib/types";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
+const SERVER_UPLOAD_MAX = 3.5 * 1024 * 1024;
+
 async function uploadViaApi(
   file: File,
 ): Promise<{ url: string; mediaType: "image" | "video" }> {
   const body = new FormData();
   body.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Upload failed");
+  let data: { error?: string; url?: string; mediaType?: string } = {};
+  try {
+    data = await res.json();
+  } catch {
+    /* ignore */
+  }
+  if (!res.ok) {
+    throw new Error(data.error || `فشل الرفع (${res.status})`);
+  }
+  if (!data.url) throw new Error("لم يُرجع الخادم رابط الملف");
   return {
-    url: data.url as string,
+    url: data.url,
     mediaType: data.mediaType === "video" ? "video" : "image",
   };
 }
@@ -26,33 +36,67 @@ function isVideoFile(file: File) {
   return /\.(mp4|webm|mov|m4v)$/i.test(file.name);
 }
 
+function resolveContentType(file: File, mediaType: "image" | "video") {
+  const mime = (file.type || "").toLowerCase().trim();
+  if (mime && mime !== "application/octet-stream") return mime;
+  if (mediaType === "video") {
+    if (/\.webm$/i.test(file.name)) return "video/webm";
+    if (/\.mov$/i.test(file.name)) return "video/quicktime";
+    if (/\.m4v$/i.test(file.name)) return "video/x-m4v";
+    return "video/mp4";
+  }
+  if (/\.png$/i.test(file.name)) return "image/png";
+  if (/\.webp$/i.test(file.name)) return "image/webp";
+  if (/\.gif$/i.test(file.name)) return "image/gif";
+  return "image/jpeg";
+}
+
+async function uploadViaClientBlob(
+  file: File,
+  mediaType: "image" | "video",
+): Promise<{ url: string; mediaType: "image" | "video" }> {
+  const ext =
+    file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+    (mediaType === "video" ? "mp4" : "jpg");
+  const pathname = `uploads/${crypto.randomUUID()}.${ext}`;
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const blob = await upload(pathname, file, {
+        access: "public",
+        handleUploadUrl: "/api/blob-upload",
+        contentType: resolveContentType(file, mediaType),
+        multipart: file.size > 4 * 1024 * 1024,
+      });
+      if (!blob.url) throw new Error("لم يُرجع Blob رابطاً");
+      return { url: blob.url, mediaType };
+    } catch (err) {
+      lastError = err;
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 400 + attempt * 600));
+      }
+    }
+  }
+  const message =
+    lastError instanceof Error ? lastError.message : "فشل رفع الملف إلى Blob";
+  throw new Error(message);
+}
+
 async function uploadFile(
   file: File,
 ): Promise<{ url: string; mediaType: "image" | "video" }> {
   const mediaType = isVideoFile(file) ? "video" : "image";
-  // Direct-to-Blob for videos / larger files (avoids Vercel ~4.5MB API body limit)
-  const useClientBlob = mediaType === "video" || file.size > 3.5 * 1024 * 1024;
-
-  if (useClientBlob) {
-    try {
-      const ext =
-        file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
-        (mediaType === "video" ? "mp4" : "jpg");
-      const pathname = `uploads/${crypto.randomUUID()}.${ext}`;
-      const blob = await upload(pathname, file, {
-        access: "public",
-        handleUploadUrl: "/api/blob-upload",
-        contentType:
-          file.type || (mediaType === "video" ? "video/mp4" : "image/jpeg"),
-        multipart: file.size > 8 * 1024 * 1024,
-      });
-      return { url: blob.url, mediaType };
-    } catch {
-      return uploadViaApi(file);
-    }
+  // Direct-to-Blob for videos / larger files (avoids Vercel ~4.5MB API body limit).
+  // Never silently fall back for those — the API route cannot accept them.
+  if (mediaType === "video" || file.size > SERVER_UPLOAD_MAX) {
+    return uploadViaClientBlob(file, mediaType);
   }
 
-  return uploadViaApi(file);
+  try {
+    return await uploadViaApi(file);
+  } catch {
+    return uploadViaClientBlob(file, mediaType);
+  }
 }
 
 type PublishKind = "media" | "text";

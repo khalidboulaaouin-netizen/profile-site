@@ -36,18 +36,37 @@ export default function AdminSettingsPage() {
     });
   }, []);
 
+  async function readApiError(res: Response, fallback: string) {
+    try {
+      const data = await res.json();
+      if (data?.error) return String(data.error);
+    } catch {
+      /* ignore */
+    }
+    return fallback;
+  }
+
   async function saveProfile(e: FormEvent) {
     e.preventDefault();
     if (!profile) return;
     setBusy(true);
     setMessage("");
-    const res = await fetch("/api/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profile),
-    });
-    setBusy(false);
-    setMessage(res.ok ? t.savedProfile : t.saveFailed);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      if (res.ok) {
+        setMessage(t.savedProfile);
+      } else {
+        setMessage(await readApiError(res, t.saveFailed));
+      }
+    } catch {
+      setMessage(t.saveFailed);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function saveSettings(e: FormEvent) {
@@ -55,32 +74,37 @@ export default function AdminSettingsPage() {
     if (!settings) return;
     setBusy(true);
     setMessage("");
-    const nextLanguage = normalizeLocale(settings.language);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...settings,
-        language: nextLanguage,
-        seoKeywords:
-          typeof settings.seoKeywords === "string"
-            ? String(settings.seoKeywords)
-                .split(",")
-                .map((k) => k.trim())
-                .filter(Boolean)
-            : settings.seoKeywords,
-      }),
-    });
-    setBusy(false);
-    if (res.ok) {
-      const dict = getDictionary(nextLanguage);
-      setT(dict);
-      setMessage(dict.savedSettings);
-      router.refresh();
-      // Reload so <html lang/dir> updates for the whole app
-      window.setTimeout(() => window.location.reload(), 400);
-    } else {
+    try {
+      const nextLanguage = normalizeLocale(settings.language);
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...settings,
+          language: nextLanguage,
+          seoKeywords:
+            typeof settings.seoKeywords === "string"
+              ? String(settings.seoKeywords)
+                  .split(",")
+                  .map((k) => k.trim())
+                  .filter(Boolean)
+              : settings.seoKeywords,
+        }),
+      });
+      if (res.ok) {
+        const dict = getDictionary(nextLanguage);
+        setT(dict);
+        setMessage(dict.savedSettings);
+        router.refresh();
+        // Reload so <html lang/dir> updates for the whole app
+        window.setTimeout(() => window.location.reload(), 400);
+      } else {
+        setMessage(await readApiError(res, t.saveFailed));
+      }
+    } catch {
       setMessage(t.saveFailed);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -88,13 +112,22 @@ export default function AdminSettingsPage() {
     e.preventDefault();
     setBusy(true);
     setMessage("");
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ highlights }),
-    });
-    setBusy(false);
-    setMessage(res.ok ? t.savedHighlights : t.saveFailed);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ highlights }),
+      });
+      if (res.ok) {
+        setMessage(t.savedHighlights);
+      } else {
+        setMessage(await readApiError(res, t.saveFailed));
+      }
+    } catch {
+      setMessage(t.saveFailed);
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!profile || !settings) {

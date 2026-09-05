@@ -19,7 +19,15 @@ import type {
   QuestionAnswer,
 } from "./types";
 import { normalizeDecoration, normalizeHex } from "./theme";
-import { readPersistedStoreJson, writePersistedStoreJson, blobEnabled } from "./storage";
+import {
+  readPersistedStoreJson,
+  readPersistedStoreSnapshot,
+  writePersistedStoreJson,
+  readPersistedAnalyticsSnapshot,
+  writePersistedAnalyticsJson,
+  blobEnabled,
+  isBlobConflictError,
+} from "./storage";
 
 const STORY_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -283,30 +291,91 @@ export async function writeStore(store: Store): Promise<void> {
   await writePersistedStoreJson(JSON.stringify(store, null, 2));
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export class StoreUnavailableError extends Error {
+  constructor(message = "التخزين غير متاح مؤقتاً، أعد المحاولة") {
+    super(message);
+    this.name = "StoreUnavailableError";
+  }
+}
+
+/**
+ * Safe read-modify-write with Blob ETag CAS retries.
+ * Use this for every store mutation to avoid lost updates.
+ */
+export async function mutateStore(
+  mutator: (store: Store) => void | Promise<void>,
+): Promise<Store> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const snap = await readPersistedStoreSnapshot();
+    if (snap.unavailable) {
+      throw new StoreUnavailableError();
+    }
+
+    let store: Store;
+    if (snap.json) {
+      try {
+        store = normalizeStore(JSON.parse(snap.json) as Store);
+      } catch {
+        throw new StoreUnavailableError("بيانات التخزين تالفة مؤقتاً");
+      }
+    } else {
+      store = defaultStore();
+    }
+
+    const draft = structuredClone(store) as Store;
+    await mutator(draft);
+    const normalized = normalizeStore(draft);
+    const payload = JSON.stringify(normalized, null, 2);
+
+    try {
+      // First create has no etag; later writes use ifMatch.
+      await writePersistedStoreJson(payload, snap.etag);
+      return normalized;
+    } catch (error) {
+      lastError = error;
+      if (isBlobConflictError(error) && attempt < 5) {
+        await sleep(40 + attempt * 70);
+        continue;
+      }
+      // Race without etag on first write: retry
+      if (blobEnabled() && attempt < 5) {
+        await sleep(40 + attempt * 70);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("تعذر الحفظ بسبب تعارض، أعد المحاولة");
+}
+
+
 export async function updateProfile(patch: Partial<Profile>): Promise<Profile> {
-  const store = await readStore();
   const clean = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   ) as Partial<Profile>;
-  store.profile = normalizeProfile({ ...store.profile, ...clean });
-  await writeStore(store);
+  const store = await mutateStore((draft) => {
+    draft.profile = normalizeProfile({ ...draft.profile, ...clean });
+  });
   return store.profile;
 }
 
 export async function updateSettings(patch: Partial<SiteSettings>): Promise<SiteSettings> {
-  const store = await readStore();
   const clean = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   ) as Partial<SiteSettings>;
 
   if (clean.accentColor !== undefined) {
-    clean.accentColor = normalizeHex(clean.accentColor, store.settings.accentColor || "#0095f6");
+    clean.accentColor = normalizeHex(clean.accentColor, "#0095f6");
   }
   if (clean.backgroundColor !== undefined) {
-    clean.backgroundColor = normalizeHex(
-      clean.backgroundColor,
-      store.settings.backgroundColor || "#fafafa",
-    );
+    clean.backgroundColor = normalizeHex(clean.backgroundColor, "#fafafa");
   }
   if (clean.decoration !== undefined) {
     clean.decoration = normalizeDecoration(clean.decoration);
@@ -332,12 +401,13 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
     clean.adsenseSlotId = String(clean.adsenseSlotId || "").replace(/\D/g, "").slice(0, 16);
   }
 
-  store.settings = {
-    ...defaultStore().settings,
-    ...store.settings,
-    ...clean,
-  };
-  await writeStore(store);
+  const store = await mutateStore((draft) => {
+    draft.settings = {
+      ...defaultStore().settings,
+      ...draft.settings,
+      ...clean,
+    };
+  });
   return store.settings;
 }
 
@@ -346,7 +416,6 @@ export async function addPost(input: {
   caption: string;
   mediaType?: "image" | "video" | "text";
 }): Promise<Post> {
-  const store = await readStore();
   const mediaType = normalizeMediaType(input.mediaType);
   const caption =
     mediaType === "text"
@@ -363,8 +432,9 @@ export async function addPost(input: {
     likedBy: [],
     comments: [],
   };
-  store.posts = [post, ...store.posts];
-  await writeStore(store);
+  await mutateStore((draft) => {
+    draft.posts = [post, ...draft.posts];
+  });
   return post;
 }
 
@@ -372,95 +442,106 @@ export async function toggleLike(
   postId: string,
   visitorId: string,
 ): Promise<{ post: Post; liked: boolean } | null> {
-  const store = await readStore();
-  if (!store.settings.enableLikes) return null;
-  const idx = store.posts.findIndex((p) => p.id === postId);
-  if (idx === -1) return null;
+  let result: { post: Post; liked: boolean } | null = null;
+  await mutateStore((draft) => {
+    if (!draft.settings.enableLikes) return;
+    const idx = draft.posts.findIndex((p) => p.id === postId);
+    if (idx === -1) return;
 
-  const post = normalizePost(store.posts[idx]);
-  if (post.hidden) return null;
-  const liked = post.likedBy.includes(visitorId);
-  if (liked) {
-    post.likedBy = post.likedBy.filter((id) => id !== visitorId);
-  } else {
-    post.likedBy = [...post.likedBy, visitorId];
-  }
-  post.likes = post.likedBy.length;
-  store.posts[idx] = post;
-  await writeStore(store);
-  return { post, liked: !liked };
+    const post = normalizePost(draft.posts[idx]);
+    if (post.hidden) return;
+    const liked = post.likedBy.includes(visitorId);
+    if (liked) {
+      post.likedBy = post.likedBy.filter((id) => id !== visitorId);
+    } else {
+      post.likedBy = [...post.likedBy, visitorId];
+    }
+    post.likes = post.likedBy.length;
+    draft.posts[idx] = post;
+    result = { post, liked: !liked };
+  });
+  return result;
 }
 
 export async function addComment(
   postId: string,
   input: { authorName: string; text: string },
 ): Promise<Post | null> {
-  const store = await readStore();
-  if (!store.settings.enableComments) return null;
-  const idx = store.posts.findIndex((p) => p.id === postId);
-  if (idx === -1) return null;
-
-  const post = normalizePost(store.posts[idx]);
-  if (post.hidden) return null;
   const authorName = input.authorName.trim().slice(0, 60);
   const text = input.text.trim().slice(0, 500);
   if (!authorName || !text) return null;
 
-  post.comments = [
-    ...post.comments,
-    {
-      id: randomUUID(),
-      authorName,
-      text,
-      createdAt: new Date().toISOString(),
-    },
-  ];
-  store.posts[idx] = post;
-  await writeStore(store);
-  return post;
+  let result: Post | null = null;
+  await mutateStore((draft) => {
+    if (!draft.settings.enableComments) return;
+    const idx = draft.posts.findIndex((p) => p.id === postId);
+    if (idx === -1) return;
+
+    const post = normalizePost(draft.posts[idx]);
+    if (post.hidden) return;
+
+    post.comments = [
+      ...post.comments,
+      {
+        id: randomUUID(),
+        authorName,
+        text,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+    draft.posts[idx] = post;
+    result = post;
+  });
+  return result;
 }
 
 export async function deleteComment(
   postId: string,
   commentId: string,
 ): Promise<Post | null> {
-  const store = await readStore();
-  const idx = store.posts.findIndex((p) => p.id === postId);
-  if (idx === -1) return null;
-  const post = normalizePost(store.posts[idx]);
-  post.comments = post.comments.filter((c) => c.id !== commentId);
-  store.posts[idx] = post;
-  await writeStore(store);
-  return post;
+  let result: Post | null = null;
+  await mutateStore((draft) => {
+    const idx = draft.posts.findIndex((p) => p.id === postId);
+    if (idx === -1) return;
+    const post = normalizePost(draft.posts[idx]);
+    post.comments = post.comments.filter((c) => c.id !== commentId);
+    draft.posts[idx] = post;
+    result = post;
+  });
+  return result;
 }
 
 export async function updatePost(
   id: string,
   patch: Partial<Pick<Post, "caption" | "imageUrl" | "hidden" | "mediaType">>,
 ): Promise<Post | null> {
-  const store = await readStore();
-  const idx = store.posts.findIndex((p) => p.id === id);
-  if (idx === -1) return null;
   const clean = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   ) as Partial<Post>;
-  store.posts[idx] = normalizePost({ ...store.posts[idx], ...clean });
-  await writeStore(store);
-  return store.posts[idx];
+  let result: Post | null = null;
+  await mutateStore((draft) => {
+    const idx = draft.posts.findIndex((p) => p.id === id);
+    if (idx === -1) return;
+    draft.posts[idx] = normalizePost({ ...draft.posts[idx], ...clean });
+    result = draft.posts[idx];
+  });
+  return result;
 }
 
 export async function deletePost(id: string): Promise<boolean> {
-  const store = await readStore();
-  const before = store.posts.length;
-  store.posts = store.posts.filter((p) => p.id !== id);
-  await writeStore(store);
-  return store.posts.length < before;
+  let removed = false;
+  await mutateStore((draft) => {
+    const before = draft.posts.length;
+    draft.posts = draft.posts.filter((p) => p.id !== id);
+    removed = draft.posts.length < before;
+  });
+  return removed;
 }
 
 export async function setHighlights(highlights: Highlight[]): Promise<Highlight[]> {
-  const store = await readStore();
-  store.highlights = highlights.map(normalizeHighlight);
-  await writeStore(store);
+  const store = await mutateStore((draft) => {
+    draft.highlights = highlights.map(normalizeHighlight);
+  });
   return store.highlights;
 }
 
@@ -897,6 +978,59 @@ function utcDateKey(d = new Date()): string {
   return d.toISOString().slice(0, 10);
 }
 
+async function mutateAnalytics(
+  mutator: (analytics: Analytics) => void,
+): Promise<Analytics> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const snap = await readPersistedAnalyticsSnapshot();
+    if (snap.unavailable) {
+      throw new StoreUnavailableError();
+    }
+
+    let analytics: Analytics;
+    if (snap.json) {
+      try {
+        analytics = normalizeAnalytics(JSON.parse(snap.json) as Analytics);
+      } catch {
+        analytics = normalizeAnalytics(undefined);
+      }
+    } else {
+      // One-time seed from legacy analytics embedded in the main store.
+      try {
+        const store = await readStore();
+        analytics = normalizeAnalytics(store.analytics);
+      } catch {
+        analytics = normalizeAnalytics(undefined);
+      }
+    }
+
+    const draft = structuredClone(analytics) as Analytics;
+    mutator(draft);
+    const normalized = normalizeAnalytics(draft);
+    const payload = JSON.stringify(normalized);
+
+    try {
+      await writePersistedAnalyticsJson(payload, snap.etag);
+      return normalized;
+    } catch (error) {
+      lastError = error;
+      if (isBlobConflictError(error) && attempt < 5) {
+        await sleep(40 + attempt * 70);
+        continue;
+      }
+      if (blobEnabled() && attempt < 5) {
+        await sleep(40 + attempt * 70);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("تعذر تحديث الإحصائيات، أعد المحاولة");
+}
+
 export async function recordPageVisit(input: {
   visitorHash: string;
   countryCode?: string;
@@ -906,52 +1040,41 @@ export async function recordPageVisit(input: {
     .slice(0, 64);
   if (!hash) return { ok: true };
 
-  const country = String(input.countryCode || "ZZ")
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .slice(0, 3) || "ZZ";
+  const country =
+    String(input.countryCode || "ZZ")
+      .toUpperCase()
+      .replace(/[^A-Z]/g, "")
+      .slice(0, 3) || "ZZ";
 
-  const store = await readStore();
-  const analytics = normalizeAnalytics(store.analytics);
-  const today = utcDateKey();
-  let day = analytics.days.find((d) => d.date === today);
-  if (!day) {
-    day = {
-      date: today,
-      views: 0,
-      uniqueVisitors: 0,
-      countries: {},
-      visitorHashes: [],
-    };
-    analytics.days = [day, ...analytics.days].slice(0, 90);
+  try {
+    await mutateAnalytics((analytics) => {
+      const today = utcDateKey();
+      let day = analytics.days.find((d) => d.date === today);
+      if (!day) {
+        day = {
+          date: today,
+          views: 0,
+          uniqueVisitors: 0,
+          countries: {},
+          visitorHashes: [],
+        };
+        analytics.days = [day, ...analytics.days].slice(0, 90);
+      }
+
+      day.views += 1;
+      analytics.totalViews += 1;
+      day.countries[country] = (day.countries[country] || 0) + 1;
+
+      if (!day.visitorHashes.includes(hash)) {
+        if (day.visitorHashes.length < 2000) {
+          day.visitorHashes.push(hash);
+        }
+        day.uniqueVisitors = day.visitorHashes.length;
+      }
+    });
+  } catch {
+    // Never block the public page if analytics write fails.
   }
-
-  day.views += 1;
-  analytics.totalViews += 1;
-  day.countries[country] = (day.countries[country] || 0) + 1;
-
-  if (!day.visitorHashes.includes(hash)) {
-    if (day.visitorHashes.length < 2000) {
-      day.visitorHashes.push(hash);
-    }
-    day.uniqueVisitors = day.visitorHashes.length;
-  }
-
-  store.analytics = {
-    totalViews: analytics.totalViews,
-    days: analytics.days.map((d) =>
-      d.date === today
-        ? {
-            date: d.date,
-            views: d.views,
-            uniqueVisitors: d.uniqueVisitors,
-            countries: d.countries,
-            visitorHashes: d.visitorHashes,
-          }
-        : d,
-    ),
-  };
-  await writeStore(store);
   return { ok: true };
 }
 
@@ -974,7 +1097,16 @@ export type AnalyticsSummary = {
 
 export async function getAnalyticsSummary(days = 30): Promise<AnalyticsSummary> {
   const store = await readStore();
-  const analytics = normalizeAnalytics(store.analytics);
+  let analytics = normalizeAnalytics(store.analytics);
+  try {
+    const snap = await readPersistedAnalyticsSnapshot();
+    if (!snap.unavailable && snap.json) {
+      analytics = normalizeAnalytics(JSON.parse(snap.json) as Analytics);
+    }
+  } catch {
+    /* keep legacy analytics from main store */
+  }
+
   const limit = Math.max(1, Math.min(90, days));
   const slice = analytics.days.slice(0, limit);
   const today = utcDateKey();

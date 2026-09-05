@@ -146,6 +146,13 @@ export type SiteSettings = {
    * Leave empty to use only built-in free stats.
    */
   gaMeasurementId: string;
+  /**
+   * Free Google AdSense client ID (ca-pub-XXXXXXXX).
+   * Leave empty until AdSense approves your site.
+   */
+  adsenseClientId: string;
+  /** Optional AdSense ad unit slot ID (digits only). */
+  adsenseSlotId: string;
 };
 
 export type AnalyticsDay = {

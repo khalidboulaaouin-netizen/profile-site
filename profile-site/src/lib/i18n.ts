@@ -235,6 +235,11 @@ export type Dictionary = {
   statsLimitsLede: string;
   gaMeasurementId: string;
   gaMeasurementIdHelp: string;
+  adsenseSection: string;
+  adsenseClientId: string;
+  adsenseClientIdHelp: string;
+  adsenseSlotId: string;
+  adsenseSlotIdHelp: string;
 };
 
 const ar: Dictionary = {
@@ -465,6 +470,11 @@ const ar: Dictionary = {
   statsLimitsLede: "العمر والجنس غير متوفرين بدقة عبر متابعة Google المجانية. لبيانات أغنى مجاناً ضع معرّف Google Analytics (G-...) في الإعدادات.",
   gaMeasurementId: "معرّف Google Analytics المجاني (اختياري)",
   gaMeasurementIdHelp: "من analytics.google.com أنشئ عقاراً مجانياً وانسخ Measurement ID مثل G-XXXX. اتركه فارغاً إن اكتفيت بالإحصائيات داخل الموقع.",
+  adsenseSection: "Google AdSense (ربح مجاني)",
+  adsenseClientId: "معرّف ناشر AdSense",
+  adsenseClientIdHelp: "من adsense.google.com بحسابك انسخ Publisher ID مثل ca-pub-XXXXXXXX. الربط مجاني بعد موافقة Google على الموقع.",
+  adsenseSlotId: "معرّف وحدة الإعلان (Slot)",
+  adsenseSlotIdHelp: "بعد إنشاء وحدة إعلان في AdSense انسخ رقم الـ Slot (أرقام فقط). اتركه فارغاً حتى تتم الموافقة.",
 };
 
 const en: Dictionary = {
@@ -695,6 +705,11 @@ const en: Dictionary = {
   statsLimitsLede: "Age and gender are not available accurately via free Google follow. For richer free reports, add a Google Analytics Measurement ID (G-...) in settings.",
   gaMeasurementId: "Free Google Analytics ID (optional)",
   gaMeasurementIdHelp: "From analytics.google.com create a free property and paste the Measurement ID like G-XXXX. Leave empty to use only built-in stats.",
+  adsenseSection: "Google AdSense (free earnings)",
+  adsenseClientId: "AdSense publisher ID",
+  adsenseClientIdHelp: "From adsense.google.com copy your Publisher ID like ca-pub-XXXXXXXX. Free after Google approves the site.",
+  adsenseSlotId: "Ad unit slot ID",
+  adsenseSlotIdHelp: "After creating an ad unit in AdSense, paste the slot numbers only. Leave empty until approved.",
 };
 
 const fr: Dictionary = {

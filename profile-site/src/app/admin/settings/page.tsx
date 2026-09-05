@@ -341,6 +341,31 @@ export default function AdminSettingsPage() {
           <p className="lede" style={{ marginTop: "-0.35rem" }}>
             {t.gaMeasurementIdHelp}
           </p>
+          <h3 style={{ marginTop: "0.75rem" }}>{t.adsenseSection}</h3>
+          <label>
+            {t.adsenseClientId}
+            <input
+              value={settings.adsenseClientId || ""}
+              onChange={(e) => setSettings({ ...settings, adsenseClientId: e.target.value })}
+              placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+              dir="ltr"
+            />
+          </label>
+          <p className="lede" style={{ marginTop: "-0.35rem" }}>
+            {t.adsenseClientIdHelp}
+          </p>
+          <label>
+            {t.adsenseSlotId}
+            <input
+              value={settings.adsenseSlotId || ""}
+              onChange={(e) => setSettings({ ...settings, adsenseSlotId: e.target.value })}
+              placeholder="1234567890"
+              dir="ltr"
+            />
+          </label>
+          <p className="lede" style={{ marginTop: "-0.35rem" }}>
+            {t.adsenseSlotIdHelp}
+          </p>
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <input
               type="checkbox"

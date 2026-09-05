@@ -54,6 +54,10 @@ export async function PATCH(request: Request) {
         : undefined,
     gaMeasurementId:
       body.gaMeasurementId !== undefined ? String(body.gaMeasurementId).trim() : undefined,
+    adsenseClientId:
+      body.adsenseClientId !== undefined ? String(body.adsenseClientId).trim() : undefined,
+    adsenseSlotId:
+      body.adsenseSlotId !== undefined ? String(body.adsenseSlotId).trim() : undefined,
   });
 
   return NextResponse.json({ settings });

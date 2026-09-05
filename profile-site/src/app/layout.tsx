@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { GoogleAdSense } from "@/components/GoogleAdSense";
 import { Providers } from "@/components/Providers";
 import { readStore } from "@/lib/db";
 import { getLocaleMeta, getOgLocale } from "@/lib/i18n";
@@ -83,6 +84,7 @@ export default async function RootLayout({
   const themeVars = themeCssVars(store.settings);
   const colorMode = store.settings.colorMode || "system";
   const gaId = store.settings.gaMeasurementId || "";
+  const adsenseClient = store.settings.adsenseClientId || "";
 
   const colorBootScript = `
 (function(){
@@ -101,6 +103,7 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: colorBootScript }} />
         <GoogleAnalytics measurementId={gaId} />
+        <GoogleAdSense clientId={adsenseClient} />
       </head>
       <body
         className={`${cairo.variable} ${ibm.variable} antialiased`}

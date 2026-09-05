@@ -8,6 +8,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { StoryRing } from "@/components/StoryRing";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VisitTracker } from "@/components/VisitTracker";
+import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { auth } from "@/lib/auth";
 import { isBlocked, readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
@@ -139,6 +140,12 @@ export default async function HomePage() {
         closeLabel={t.close}
       />
 
+      <AdSenseUnit
+        clientId={store.settings.adsenseClientId}
+        slotId={store.settings.adsenseSlotId}
+        format="horizontal"
+      />
+
       <div className="section-title">
         <h2>{t.posts}</h2>
       </div>
@@ -149,6 +156,12 @@ export default async function HomePage() {
         locale={locale}
         enableLikes={store.settings.enableLikes}
         enableComments={store.settings.enableComments}
+      />
+
+      <AdSenseUnit
+        clientId={store.settings.adsenseClientId}
+        slotId={store.settings.adsenseSlotId}
+        format="rectangle"
       />
 
       <p className="footer-note">{t.footerNote}</p>

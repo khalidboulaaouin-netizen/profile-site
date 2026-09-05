@@ -66,6 +66,8 @@ const defaultStore = (): Store => ({
     publicSiteUrl: "",
     colorMode: "system",
     gaMeasurementId: "",
+    adsenseClientId: "",
+    adsenseSlotId: "",
   },
   analytics: {
     totalViews: 0,
@@ -164,6 +166,12 @@ function normalizeStore(store: Store): Store {
         .replace(/^.*?(G-[A-Z0-9]+).*$/i, "$1")
         .replace(/[^G\-A-Z0-9]/gi, "")
         .slice(0, 16),
+      adsenseClientId: (() => {
+        const raw = String(store.settings?.adsenseClientId || "").trim().toLowerCase();
+        const m = raw.match(/ca-pub-\d{10,20}/);
+        return m ? m[0] : "";
+      })(),
+      adsenseSlotId: String(store.settings?.adsenseSlotId || "").replace(/\D/g, "").slice(0, 16),
     },
     notifications: Array.isArray(store.notifications)
       ? store.notifications
@@ -290,6 +298,14 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
     const raw = String(clean.gaMeasurementId || "").trim().toUpperCase();
     const match = raw.match(/G-[A-Z0-9]+/);
     clean.gaMeasurementId = match ? match[0].slice(0, 16) : "";
+  }
+  if (clean.adsenseClientId !== undefined) {
+    const raw = String(clean.adsenseClientId || "").trim().toLowerCase();
+    const match = raw.match(/ca-pub-\d{10,20}/);
+    clean.adsenseClientId = match ? match[0] : "";
+  }
+  if (clean.adsenseSlotId !== undefined) {
+    clean.adsenseSlotId = String(clean.adsenseSlotId || "").replace(/\D/g, "").slice(0, 16);
   }
 
   store.settings = {

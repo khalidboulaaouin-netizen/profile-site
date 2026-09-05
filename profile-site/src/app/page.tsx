@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { FollowButton } from "@/components/FollowButton";
+import { MessageButton } from "@/components/MessageButton";
 import { PostGrid } from "@/components/PostGrid";
 import { HighlightsRow, ProfileHeader } from "@/components/ProfileHeader";
 import { StoryRing } from "@/components/StoryRing";
@@ -64,7 +65,12 @@ export default async function HomePage() {
           highlights: t.highlights,
           verifiedLabel: t.verifiedLabel,
         }}
-        followSlot={<FollowButton labels={t} locale={locale} />}
+        followSlot={
+          <div className="profile-actions">
+            <FollowButton labels={t} locale={locale} />
+            <MessageButton labels={t} />
+          </div>
+        }
       />
 
       <Suspense fallback={null}>

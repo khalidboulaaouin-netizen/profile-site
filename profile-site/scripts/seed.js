@@ -95,6 +95,7 @@ const store = {
   stories: [],
   followers: [],
   blockedUsers: [],
+  conversations: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",
     siteDescription:

@@ -123,5 +123,33 @@
     "backgroundColor": "#eef3f8",
     "decoration": "waves"
   },
-  "blockedUsers": []
+  "blockedUsers": [],
+  "conversations": [
+    {
+      "id": "3d567ec1-f78f-4a93-aaa7-88f9c9d6604d",
+      "googleId": "g-msg-1",
+      "name": "متابع تجريبي",
+      "email": "fan@example.com",
+      "image": "",
+      "updatedAt": "2026-09-05T03:20:34.737Z",
+      "messages": [
+        {
+          "id": "61efcbd0-aa6f-4b7f-bf73-5eef455d5445",
+          "from": "follower",
+          "text": "مرحبا، رسالة تجريبية",
+          "createdAt": "2026-09-05T03:20:34.735Z",
+          "readByOwner": false,
+          "readByFollower": true
+        },
+        {
+          "id": "1d9f2b14-752a-4287-a56a-2edb754f2428",
+          "from": "owner",
+          "text": "أهلاً بك",
+          "createdAt": "2026-09-05T03:20:34.737Z",
+          "readByOwner": true,
+          "readByFollower": false
+        }
+      ]
+    }
+  ]
 }

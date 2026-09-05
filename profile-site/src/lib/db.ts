@@ -11,6 +11,8 @@ import type {
   BlockedUser,
   Story,
   StoryViewer,
+  Conversation,
+  ChatMessage,
 } from "./types";
 import { normalizeDecoration, normalizeHex } from "./theme";
 
@@ -38,6 +40,7 @@ const defaultStore = (): Store => ({
   stories: [],
   followers: [],
   blockedUsers: [],
+  conversations: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",
     siteDescription:
@@ -87,6 +90,12 @@ function normalizeStore(store: Store): Store {
       .map(normalizeStory)
       .filter((story) => isStoryActive(story, now)),
     blockedUsers: Array.isArray(store.blockedUsers) ? store.blockedUsers : [],
+    conversations: Array.isArray(store.conversations)
+      ? store.conversations.map((c) => ({
+          ...c,
+          messages: Array.isArray(c.messages) ? c.messages : [],
+        }))
+      : [],
     settings: {
       ...defaultStore().settings,
       ...store.settings,
@@ -438,4 +447,122 @@ export async function unblockUser(googleId: string): Promise<boolean> {
   store.blockedUsers = (store.blockedUsers || []).filter((u) => u.googleId !== googleId);
   await writeStore(store);
   return store.blockedUsers.length < before;
+}
+
+export async function listConversations(): Promise<Conversation[]> {
+  const store = await readStore();
+  return [...(store.conversations || [])].sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  );
+}
+
+export async function getConversationByGoogleId(
+  googleId: string,
+): Promise<Conversation | null> {
+  const store = await readStore();
+  return (store.conversations || []).find((c) => c.googleId === googleId) || null;
+}
+
+export async function sendFollowerMessage(input: {
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  text: string;
+}): Promise<Conversation | null> {
+  const text = input.text.trim().slice(0, 1000);
+  if (!input.googleId || !text) return null;
+  if (await isBlocked(input.googleId)) return null;
+
+  const store = await readStore();
+  const now = new Date().toISOString();
+  const message: ChatMessage = {
+    id: randomUUID(),
+    from: "follower",
+    text,
+    createdAt: now,
+    readByOwner: false,
+    readByFollower: true,
+  };
+
+  const idx = (store.conversations || []).findIndex((c) => c.googleId === input.googleId);
+  if (idx === -1) {
+    const conversation: Conversation = {
+      id: randomUUID(),
+      googleId: input.googleId,
+      name: input.name || "متابع",
+      email: input.email || "",
+      image: input.image || "",
+      updatedAt: now,
+      messages: [message],
+    };
+    store.conversations = [conversation, ...(store.conversations || [])];
+    await writeStore(store);
+    return conversation;
+  }
+
+  const conversation = store.conversations[idx];
+  conversation.name = input.name || conversation.name;
+  conversation.email = input.email || conversation.email;
+  conversation.image = input.image || conversation.image;
+  conversation.updatedAt = now;
+  conversation.messages = [...conversation.messages, message];
+  store.conversations[idx] = conversation;
+  await writeStore(store);
+  return conversation;
+}
+
+export async function sendOwnerReply(input: {
+  googleId: string;
+  text: string;
+}): Promise<Conversation | null> {
+  const text = input.text.trim().slice(0, 1000);
+  if (!input.googleId || !text) return null;
+
+  const store = await readStore();
+  const idx = (store.conversations || []).findIndex((c) => c.googleId === input.googleId);
+  if (idx === -1) return null;
+
+  const now = new Date().toISOString();
+  const message: ChatMessage = {
+    id: randomUUID(),
+    from: "owner",
+    text,
+    createdAt: now,
+    readByOwner: true,
+    readByFollower: false,
+  };
+
+  const conversation = store.conversations[idx];
+  conversation.updatedAt = now;
+  conversation.messages = [...conversation.messages, message];
+  store.conversations[idx] = conversation;
+  await writeStore(store);
+  return conversation;
+}
+
+export async function markConversationRead(input: {
+  googleId: string;
+  role: "owner" | "follower";
+}): Promise<Conversation | null> {
+  const store = await readStore();
+  const idx = (store.conversations || []).findIndex((c) => c.googleId === input.googleId);
+  if (idx === -1) return null;
+
+  const conversation = store.conversations[idx];
+  conversation.messages = conversation.messages.map((m) => {
+    if (input.role === "owner") return { ...m, readByOwner: true };
+    return { ...m, readByFollower: true };
+  });
+  store.conversations[idx] = conversation;
+  await writeStore(store);
+  return conversation;
+}
+
+export async function countUnreadForOwner(): Promise<number> {
+  const store = await readStore();
+  return (store.conversations || []).reduce(
+    (sum, c) => sum + c.messages.filter((m) => m.from === "follower" && !m.readByOwner).length,
+    0,
+  );
 }

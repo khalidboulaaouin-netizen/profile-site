@@ -66,6 +66,25 @@ export type BlockedUser = {
   blockedAt: string;
 };
 
+export type ChatMessage = {
+  id: string;
+  from: "follower" | "owner";
+  text: string;
+  createdAt: string;
+  readByOwner: boolean;
+  readByFollower: boolean;
+};
+
+export type Conversation = {
+  id: string;
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  updatedAt: string;
+  messages: ChatMessage[];
+};
+
 export type SiteSettings = {
   siteTitle: string;
   siteDescription: string;
@@ -98,5 +117,6 @@ export type Store = {
   stories: Story[];
   followers: Follower[];
   blockedUsers: BlockedUser[];
+  conversations: Conversation[];
   settings: SiteSettings;
 };

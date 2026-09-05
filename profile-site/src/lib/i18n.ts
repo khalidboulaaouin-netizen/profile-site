@@ -141,6 +141,23 @@ export type Dictionary = {
   presetSunset: string;
   presetRose: string;
   presetInk: string;
+  messages: string;
+  inbox: string;
+  inboxLede: string;
+  noMessages: string;
+  sendMessage: string;
+  writeMessage: string;
+  messageLoginRequired: string;
+  messageLoginCta: string;
+  reply: string;
+  sendReply: string;
+  conversationWith: string;
+  unread: string;
+  openChat: string;
+  yourMessages: string;
+  messageSent: string;
+  messageFailed: string;
+  backToInbox: string;
 };
 
 const ar: Dictionary = {
@@ -273,6 +290,23 @@ const ar: Dictionary = {
   presetSunset: "غروب",
   presetRose: "وردي",
   presetInk: "حبر",
+  messages: "الرسائل",
+  inbox: "صندوق الوارد",
+  inboxLede: "رسائل المتابعين عبر Google. يمكنك الرد من هنا.",
+  noMessages: "لا رسائل بعد.",
+  sendMessage: "إرسال",
+  writeMessage: "اكتب رسالة خاصة...",
+  messageLoginRequired: "سجّل الدخول عبر Google لإرسال رسالة خاصة.",
+  messageLoginCta: "تسجيل الدخول عبر Google للمراسلة",
+  reply: "رد",
+  sendReply: "إرسال الرد",
+  conversationWith: "محادثة مع",
+  unread: "غير مقروء",
+  openChat: "رسالة",
+  yourMessages: "رسائلك الخاصة",
+  messageSent: "تم إرسال الرسالة.",
+  messageFailed: "تعذّر إرسال الرسالة.",
+  backToInbox: "العودة للوارد",
 };
 
 const en: Dictionary = {
@@ -405,6 +439,23 @@ const en: Dictionary = {
   presetSunset: "Sunset",
   presetRose: "Rose",
   presetInk: "Ink",
+  messages: "Messages",
+  inbox: "Inbox",
+  inboxLede: "Messages from Google followers. You can reply here.",
+  noMessages: "No messages yet.",
+  sendMessage: "Send",
+  writeMessage: "Write a private message...",
+  messageLoginRequired: "Sign in with Google to send a private message.",
+  messageLoginCta: "Sign in with Google to message",
+  reply: "Reply",
+  sendReply: "Send reply",
+  conversationWith: "Conversation with",
+  unread: "Unread",
+  openChat: "Message",
+  yourMessages: "Your private messages",
+  messageSent: "Message sent.",
+  messageFailed: "Could not send the message.",
+  backToInbox: "Back to inbox",
 };
 
 const fr: Dictionary = {

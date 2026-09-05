@@ -98,6 +98,7 @@ export default function AdminStoriesPage() {
         <Link href="/admin/stories" className="active">
           {t.stories}
         </Link>
+        <Link href="/admin/messages">{t.messages}</Link>
         <Link href="/admin/settings">{t.settings}</Link>
         <Link href="/admin/followers">{t.followers}</Link>
         <Link href="/">{t.viewPage}</Link>

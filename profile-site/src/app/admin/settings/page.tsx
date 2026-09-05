@@ -111,6 +111,7 @@ export default function AdminSettingsPage() {
         <Link href="/admin">{t.overview}</Link>
         <Link href="/admin/posts">{t.posts}</Link>
         <Link href="/admin/stories">{t.stories}</Link>
+        <Link href="/admin/messages">{t.messages}</Link>
         <Link href="/admin/settings" className="active">
           {t.settings}
         </Link>

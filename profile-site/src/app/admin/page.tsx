@@ -22,6 +22,7 @@ export default async function AdminHome() {
         </Link>
         <Link href="/admin/posts">{t.posts}</Link>
         <Link href="/admin/stories">{t.stories}</Link>
+        <Link href="/admin/messages">{t.messages}</Link>
         <Link href="/admin/settings">{t.settings}</Link>
         <Link href="/admin/followers">{t.followers}</Link>
         <Link href="/">{t.viewPage}</Link>

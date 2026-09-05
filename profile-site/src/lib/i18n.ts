@@ -50,6 +50,8 @@ export type Dictionary = {
   articlePlaceholder: string;
   articleHelp: string;
   articleCoverOptional: string;
+  videoCoverOptional: string;
+  videoCoverHelp: string;
   articleBadge: string;
   chooseArticleText: string;
   image: string;
@@ -328,6 +330,8 @@ const ar: Dictionary = {
   articlePlaceholder: "اكتب مقالك هنا… قصير أو طويل.",
   articleHelp: "يمكنك نشر نص فقط، أو إضافة صورة غلاف اختيارية.",
   articleCoverOptional: "صورة غلاف (اختياري)",
+  videoCoverOptional: "صورة غلاف الفيديو (اختياري)",
+  videoCoverHelp: "مثل إنستغرام: اختر صورة تظهر قبل تشغيل الفيديو في الشبكة.",
   articleBadge: "مقال",
   chooseArticleText: "اكتب نص المقال أولاً",
   image: "الصورة",
@@ -611,6 +615,8 @@ const en: Dictionary = {
   articlePlaceholder: "Write your article here… short or long.",
   articleHelp: "You can publish text only, or add an optional cover image.",
   articleCoverOptional: "Cover image (optional)",
+  videoCoverOptional: "Video cover image (optional)",
+  videoCoverHelp: "Like Instagram: pick an image shown before the video plays in the grid.",
   articleBadge: "Article",
   chooseArticleText: "Write the article text first",
   image: "Image",

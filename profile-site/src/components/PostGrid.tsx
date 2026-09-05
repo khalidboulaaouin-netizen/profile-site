@@ -185,13 +185,21 @@ export function PostGrid({
                 </span>
               </>
             ) : post.mediaType === "video" ? (
-              <video
-                src={post.imageUrl}
-                muted
-                playsInline
-                preload="metadata"
-                aria-label={post.caption || labels.postAlt}
-              />
+              post.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.coverUrl}
+                  alt={post.caption || labels.postAlt}
+                />
+              ) : (
+                <video
+                  src={post.imageUrl}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-label={post.caption || labels.postAlt}
+                />
+              )
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={post.imageUrl} alt={post.caption || labels.postAlt} />
@@ -236,6 +244,7 @@ export function PostGrid({
                 <video
                   className="reel-player"
                   src={active.imageUrl}
+                  poster={active.coverUrl || undefined}
                   controls
                   playsInline
                   autoPlay

@@ -112,6 +112,8 @@ export default function AdminPostsPage() {
   const [t, setT] = useState<Dictionary>(() => getDictionary("ar"));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const videoCoverInputRef = useRef<HTMLInputElement>(null);
+  const [videoCoverFile, setVideoCoverFile] = useState<File | null>(null);
 
   const load = () =>
     fetch("/api/posts")
@@ -178,6 +180,18 @@ export default function AdminPostsPage() {
           return;
         }
         const uploaded = await uploadFile(selected);
+        let coverUrl = "";
+        if (uploaded.mediaType === "video") {
+          const coverSelected =
+            videoCoverFile || resolveSelectedFile(videoCoverInputRef.current);
+          if (coverSelected && coverSelected.size > 0) {
+            if (isVideoFile(coverSelected)) {
+              throw new Error(t.videoCoverOptional);
+            }
+            const coverUploaded = await uploadFile(coverSelected);
+            coverUrl = coverUploaded.url;
+          }
+        }
         const res = await fetch("/api/posts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -185,6 +199,7 @@ export default function AdminPostsPage() {
             imageUrl: uploaded.url,
             mediaType: uploaded.mediaType,
             caption,
+            coverUrl: coverUrl || undefined,
           }),
         });
         if (!res.ok) {
@@ -196,6 +211,8 @@ export default function AdminPostsPage() {
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       if (coverInputRef.current) coverInputRef.current.value = "";
+      if (videoCoverInputRef.current) videoCoverInputRef.current.value = "";
+      setVideoCoverFile(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.saveFailed);
@@ -307,6 +324,27 @@ export default function AdminPostsPage() {
               <p className="lede" style={{ marginTop: "-0.35rem" }}>
                 {t.mediaHelp}
               </p>
+              {file && isVideoFile(file) ? (
+                <>
+                  <label>
+                    {t.videoCoverOptional}
+                    <input
+                      ref={videoCoverInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setVideoCoverFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+                  {videoCoverFile ? (
+                    <p className="lede" style={{ marginTop: "-0.35rem" }}>
+                      ✓ {videoCoverFile.name}
+                    </p>
+                  ) : null}
+                  <p className="lede" style={{ marginTop: "-0.35rem" }}>
+                    {t.videoCoverHelp}
+                  </p>
+                </>
+              ) : null}
               <label>
                 {t.caption}
                 <textarea
@@ -367,7 +405,12 @@ export default function AdminPostsPage() {
                   </div>
                 )
               ) : post.mediaType === "video" ? (
-                <video src={post.imageUrl} muted playsInline preload="metadata" />
+                post.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={post.coverUrl} alt="" />
+                ) : (
+                  <video src={post.imageUrl} muted playsInline preload="metadata" />
+                )
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={post.imageUrl} alt="" />

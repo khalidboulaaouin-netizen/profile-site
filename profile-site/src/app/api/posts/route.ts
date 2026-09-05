@@ -48,7 +48,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "الوسائط مطلوبة" }, { status: 400 });
     }
 
-    const post = await addPost({ imageUrl, caption, mediaType });
+    const coverUrl = String(body.coverUrl || "").trim();
+    const post = await addPost({
+      imageUrl,
+      caption,
+      mediaType,
+      coverUrl: mediaType === "video" ? coverUrl : undefined,
+    });
     return NextResponse.json({ post }, { status: 201 });
   } catch (err) {
     return storeErrorResponse(err);
@@ -67,6 +73,7 @@ export async function PATCH(request: Request) {
     const post = await updatePost(id, {
       caption: body.caption !== undefined ? String(body.caption) : undefined,
       imageUrl: body.imageUrl !== undefined ? String(body.imageUrl) : undefined,
+      coverUrl: body.coverUrl !== undefined ? String(body.coverUrl).trim() : undefined,
       hidden: body.hidden !== undefined ? Boolean(body.hidden) : undefined,
       mediaType: body.mediaType !== undefined ? parseMediaType(body.mediaType) : undefined,
     });

@@ -442,15 +442,19 @@ export async function addPost(input: {
   imageUrl: string;
   caption: string;
   mediaType?: "image" | "video" | "text";
+  coverUrl?: string;
 }): Promise<Post> {
   const mediaType = normalizeMediaType(input.mediaType);
   const caption =
     mediaType === "text"
       ? input.caption.trim().slice(0, 20000)
       : input.caption.trim().slice(0, 2200);
+  const coverUrl =
+    mediaType === "video" ? String(input.coverUrl || "").trim() : "";
   const post: Post = {
     id: randomUUID(),
     imageUrl: mediaType === "text" ? input.imageUrl.trim() : input.imageUrl,
+    coverUrl: coverUrl || undefined,
     mediaType,
     hidden: false,
     caption,
@@ -540,7 +544,7 @@ export async function deleteComment(
 
 export async function updatePost(
   id: string,
-  patch: Partial<Pick<Post, "caption" | "imageUrl" | "hidden" | "mediaType">>,
+  patch: Partial<Pick<Post, "caption" | "imageUrl" | "coverUrl" | "hidden" | "mediaType">>,
 ): Promise<Post | null> {
   const clean = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),

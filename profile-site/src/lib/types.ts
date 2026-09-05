@@ -26,6 +26,8 @@ export type Post = {
   id: string;
   /** Media URL (image/video) or optional cover for text articles */
   imageUrl: string;
+  /** Optional cover/thumbnail for video posts (Instagram-style reel cover) */
+  coverUrl?: string;
   /** image = photo, video = reel, text = short/long written article */
   mediaType: "image" | "video" | "text";
   /** When true, post stays in admin but is hidden from the public page */

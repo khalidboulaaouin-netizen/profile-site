@@ -35,6 +35,7 @@ export async function PATCH(request: Request) {
     language: body.language !== undefined ? String(body.language) : undefined,
     verified: body.verified !== undefined ? Boolean(body.verified) : undefined,
     hideFollowers: body.hideFollowers !== undefined ? Boolean(body.hideFollowers) : undefined,
+    hideFollowing: body.hideFollowing !== undefined ? Boolean(body.hideFollowing) : undefined,
     enableLikes: body.enableLikes !== undefined ? Boolean(body.enableLikes) : undefined,
     enableComments:
       body.enableComments !== undefined ? Boolean(body.enableComments) : undefined,

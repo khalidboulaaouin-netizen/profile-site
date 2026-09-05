@@ -59,6 +59,7 @@ export default async function HomePage() {
         followersCount={store.followers.length}
         verified={store.settings.verified}
         hideFollowers={store.settings.hideFollowers}
+        hideFollowing={store.settings.hideFollowing}
         labels={{
           posts: t.posts,
           followers: t.followers,

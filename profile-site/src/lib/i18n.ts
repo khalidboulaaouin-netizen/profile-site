@@ -101,6 +101,7 @@ export type Dictionary = {
   uploadFailed: string;
   verified: string;
   hideFollowers: string;
+  hideFollowing: string;
   enableLikes: string;
   enableComments: string;
   showReadReceipts: string;
@@ -274,13 +275,15 @@ const ar: Dictionary = {
   uploadFailed: "فشل الرفع",
   verified: "توثيق الصفحة بالعلامة الزرقاء",
   hideFollowers: "إخفاء عدد المتابعين عن الزوار",
+  hideFollowing: "إخفاء عدد «أتابع» عن الزوار",
   enableLikes: "إظهار القلوب والسماح بالإعجاب",
   enableComments: "إظهار التعليقات والسماح بالكتابة",
   showReadReceipts: "إظهار «تمت القراءة» للمتابعين في الرسائل",
   showReadReceiptsHelp:
     "إذا أوقفتها، تُسجَّل قراءة رسائلك داخلياً لصندوق الوارد دون أن يرى المتابع أنك قرأت الرسالة.",
   privacySection: "التحكم بالظهور والتفاعل",
-  privacyLede: "تحكّم بما يظهر للزوار: التوثيق، المتابعون، القلوب، التعليقات، وإشعارات القراءة.",
+  privacyLede:
+    "أخفِ ما تريد: المتابعون، أتابع، القلوب، والتعليقات. ألغِ تحديد القلوب أو التعليقات لإخفائها.",
   like: "إعجاب",
   unlike: "إزالة الإعجاب",
   likesCount: "إعجاب",
@@ -449,13 +452,15 @@ const en: Dictionary = {
   uploadFailed: "Upload failed",
   verified: "Verify page with blue badge",
   hideFollowers: "Hide follower count from visitors",
+  hideFollowing: "Hide “Following” count from visitors",
   enableLikes: "Show hearts and allow likes",
   enableComments: "Show comments and allow writing",
   showReadReceipts: "Show “seen” read receipts to followers in chat",
   showReadReceiptsHelp:
     "When off, your inbox still marks messages as read, but followers won’t see that you read them.",
   privacySection: "Visibility & interaction",
-  privacyLede: "Control what visitors see: verification, followers, hearts, comments, and read receipts.",
+  privacyLede:
+    "Hide what you want: followers, following, hearts, and comments. Uncheck hearts or comments to hide them.",
   like: "Like",
   unlike: "Unlike",
   likesCount: "likes",

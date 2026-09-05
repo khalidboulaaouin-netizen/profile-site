@@ -387,6 +387,14 @@ export default function AdminSettingsPage() {
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <input
               type="checkbox"
+              checked={Boolean(settings.hideFollowing)}
+              onChange={(e) => setSettings({ ...settings, hideFollowing: e.target.checked })}
+            />
+            {t.hideFollowing}
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
               checked={settings.enableLikes !== false}
               onChange={(e) => setSettings({ ...settings, enableLikes: e.target.checked })}
             />

@@ -23,6 +23,7 @@ export function ProfileHeader({
   labels,
   verified = false,
   hideFollowers = false,
+  hideFollowing = false,
 }: {
   profile: Profile;
   brandName: string;
@@ -38,6 +39,7 @@ export function ProfileHeader({
   };
   verified?: boolean;
   hideFollowers?: boolean;
+  hideFollowing?: boolean;
 }) {
   const initial = (profile.displayName || brandName).slice(0, 1);
 
@@ -95,10 +97,12 @@ export function ProfileHeader({
               <dd>{followersCount}</dd>
             </div>
           )}
-          <div>
-            <dt>{labels.following}</dt>
-            <dd>0</dd>
-          </div>
+          {!hideFollowing && (
+            <div>
+              <dt>{labels.following}</dt>
+              <dd>0</dd>
+            </div>
+          )}
         </dl>
       </div>
     </header>

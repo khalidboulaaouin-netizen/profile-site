@@ -114,6 +114,8 @@ export type SiteSettings = {
   verified: boolean;
   /** Hide followers count on the public page */
   hideFollowers: boolean;
+  /** Hide following count on the public page */
+  hideFollowing: boolean;
   /** Show hearts and allow liking posts */
   enableLikes: boolean;
   /** Show comments and allow writing comments */

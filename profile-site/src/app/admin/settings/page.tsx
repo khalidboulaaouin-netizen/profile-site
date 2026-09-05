@@ -400,6 +400,22 @@ export default function AdminSettingsPage() {
             />
             {t.enableComments}
           </label>
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
+              checked={Boolean(settings.showReadReceipts)}
+              onChange={(e) =>
+                setSettings({ ...settings, showReadReceipts: e.target.checked })
+              }
+              style={{ marginTop: "0.2rem" }}
+            />
+            <span>
+              {t.showReadReceipts}
+              <span className="lede" style={{ display: "block", marginTop: "0.25rem" }}>
+                {t.showReadReceiptsHelp}
+              </span>
+            </span>
+          </label>
           <button className="btn btn-primary" type="submit" disabled={busy}>
             {t.saveSeo}
           </button>

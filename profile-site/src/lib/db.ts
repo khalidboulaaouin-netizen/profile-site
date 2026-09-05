@@ -57,6 +57,7 @@ const defaultStore = (): Store => ({
     accentColor: "#0d6e6e",
     backgroundColor: "#eef2f4",
     decoration: "soft",
+    showReadReceipts: false,
   },
 });
 
@@ -107,6 +108,7 @@ function normalizeStore(store: Store): Store {
       accentColor: normalizeHex(store.settings?.accentColor, "#0d6e6e"),
       backgroundColor: normalizeHex(store.settings?.backgroundColor, "#eef2f4"),
       decoration: normalizeDecoration(store.settings?.decoration),
+      showReadReceipts: store.settings?.showReadReceipts ?? false,
     },
   };
 }

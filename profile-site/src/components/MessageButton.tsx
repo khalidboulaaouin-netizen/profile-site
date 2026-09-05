@@ -5,6 +5,13 @@ import { signIn, useSession } from "next-auth/react";
 import type { Dictionary } from "@/lib/i18n";
 import type { ChatMessage, Conversation } from "@/lib/types";
 
+function lastFollowerMessageId(messages: ChatMessage[]): string | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i].from === "follower") return messages[i].id;
+  }
+  return null;
+}
+
 export function MessageButton({
   labels,
 }: {
@@ -21,6 +28,7 @@ export function MessageButton({
     | "messageSent"
     | "messageFailed"
     | "noMessages"
+    | "messageSeen"
   >;
 }) {
   const { data: session, status } = useSession();
@@ -39,6 +47,8 @@ export function MessageButton({
   useEffect(() => {
     if (open && session?.user?.role === "follower") {
       load();
+      const timer = window.setInterval(load, 8000);
+      return () => window.clearInterval(timer);
     }
   }, [open, session?.user?.role]);
 
@@ -82,6 +92,7 @@ export function MessageButton({
   }
 
   const messages: ChatMessage[] = conversation?.messages || [];
+  const seenMessageId = lastFollowerMessageId(messages);
 
   return (
     <>
@@ -115,6 +126,11 @@ export function MessageButton({
                   <time dateTime={m.createdAt}>
                     {new Date(m.createdAt).toLocaleString()}
                   </time>
+                  {m.from === "follower" &&
+                    m.id === seenMessageId &&
+                    m.readByOwner && (
+                      <span className="read-receipt">{labels.messageSeen}</span>
+                    )}
                 </div>
               ))}
             </div>

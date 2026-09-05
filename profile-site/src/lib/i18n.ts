@@ -89,6 +89,8 @@ export type Dictionary = {
   hideFollowers: string;
   enableLikes: string;
   enableComments: string;
+  showReadReceipts: string;
+  showReadReceiptsHelp: string;
   privacySection: string;
   privacyLede: string;
   like: string;
@@ -157,6 +159,7 @@ export type Dictionary = {
   yourMessages: string;
   messageSent: string;
   messageFailed: string;
+  messageSeen: string;
   backToInbox: string;
 };
 
@@ -238,8 +241,11 @@ const ar: Dictionary = {
   hideFollowers: "إخفاء عدد المتابعين عن الزوار",
   enableLikes: "إظهار القلوب والسماح بالإعجاب",
   enableComments: "إظهار التعليقات والسماح بالكتابة",
+  showReadReceipts: "إظهار «تمت القراءة» للمتابعين في الرسائل",
+  showReadReceiptsHelp:
+    "إذا أوقفتها، تُسجَّل قراءة رسائلك داخلياً لصندوق الوارد دون أن يرى المتابع أنك قرأت الرسالة.",
   privacySection: "التحكم بالظهور والتفاعل",
-  privacyLede: "تحكّم بما يظهر للزوار: التوثيق، المتابعون، القلوب، والتعليقات.",
+  privacyLede: "تحكّم بما يظهر للزوار: التوثيق، المتابعون، القلوب، التعليقات، وإشعارات القراءة.",
   like: "إعجاب",
   unlike: "إزالة الإعجاب",
   likesCount: "إعجاب",
@@ -306,6 +312,7 @@ const ar: Dictionary = {
   yourMessages: "رسائلك الخاصة",
   messageSent: "تم إرسال الرسالة.",
   messageFailed: "تعذّر إرسال الرسالة.",
+  messageSeen: "تمت القراءة",
   backToInbox: "العودة للوارد",
 };
 
@@ -387,8 +394,11 @@ const en: Dictionary = {
   hideFollowers: "Hide follower count from visitors",
   enableLikes: "Show hearts and allow likes",
   enableComments: "Show comments and allow writing",
+  showReadReceipts: "Show “seen” read receipts to followers in chat",
+  showReadReceiptsHelp:
+    "When off, your inbox still marks messages as read, but followers won’t see that you read them.",
   privacySection: "Visibility & interaction",
-  privacyLede: "Control what visitors see: verification, followers, hearts, and comments.",
+  privacyLede: "Control what visitors see: verification, followers, hearts, comments, and read receipts.",
   like: "Like",
   unlike: "Unlike",
   likesCount: "likes",
@@ -455,6 +465,7 @@ const en: Dictionary = {
   yourMessages: "Your private messages",
   messageSent: "Message sent.",
   messageFailed: "Could not send the message.",
+  messageSeen: "Seen",
   backToInbox: "Back to inbox",
 };
 

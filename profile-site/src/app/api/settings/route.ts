@@ -43,6 +43,8 @@ export async function PATCH(request: Request) {
       body.backgroundColor !== undefined ? String(body.backgroundColor) : undefined,
     decoration:
       body.decoration !== undefined ? normalizeDecoration(String(body.decoration)) : undefined,
+    showReadReceipts:
+      body.showReadReceipts !== undefined ? Boolean(body.showReadReceipts) : undefined,
   });
 
   return NextResponse.json({ settings });

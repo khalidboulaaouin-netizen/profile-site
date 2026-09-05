@@ -7,9 +7,23 @@ import {
   isBlocked,
   listConversations,
   markConversationRead,
+  readStore,
   sendFollowerMessage,
   sendOwnerReply,
 } from "@/lib/db";
+import type { Conversation } from "@/lib/types";
+
+function sanitizeForFollower(
+  conversation: Conversation | null,
+  showReadReceipts: boolean,
+): Conversation | null {
+  if (!conversation) return null;
+  if (showReadReceipts) return conversation;
+  return {
+    ...conversation,
+    messages: conversation.messages.map((m) => ({ ...m, readByOwner: false })),
+  };
+}
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -52,13 +66,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "blocked", blocked: true }, { status: 403 });
   }
 
+  const store = await readStore();
+  const showReadReceipts = Boolean(store.settings.showReadReceipts);
+
   let conversation = await getConversationByGoogleId(session.user.id);
   if (conversation) {
     await markConversationRead({ googleId: session.user.id, role: "follower" });
     conversation = await getConversationByGoogleId(session.user.id);
   }
 
-  return NextResponse.json({ conversation });
+  return NextResponse.json({
+    conversation: sanitizeForFollower(conversation, showReadReceipts),
+    showReadReceipts,
+  });
 }
 
 export async function POST(request: Request) {
@@ -98,5 +118,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "تعذّر إرسال الرسالة" }, { status: 400 });
   }
 
-  return NextResponse.json({ conversation }, { status: 201 });
+  const store = await readStore();
+  const showReadReceipts = Boolean(store.settings.showReadReceipts);
+
+  return NextResponse.json(
+    {
+      conversation: sanitizeForFollower(conversation, showReadReceipts),
+      showReadReceipts,
+    },
+    { status: 201 },
+  );
 }

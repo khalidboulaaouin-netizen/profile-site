@@ -108,6 +108,8 @@ export type SiteSettings = {
   backgroundColor: string;
   /** Background decoration style */
   decoration: "soft" | "mesh" | "dots" | "waves" | "none";
+  /** Show “seen” read receipts to followers in private chat */
+  showReadReceipts: boolean;
 };
 
 export type Store = {

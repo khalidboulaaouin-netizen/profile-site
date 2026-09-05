@@ -9,6 +9,7 @@ import { StoryRing } from "@/components/StoryRing";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VisitTracker } from "@/components/VisitTracker";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
+import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 import { auth } from "@/lib/auth";
 import { isBlocked, readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
@@ -177,6 +178,16 @@ export default async function HomePage() {
       />
 
       <p className="footer-note">{t.footerNote}</p>
+
+      <InstallAppPrompt
+        labels={{
+          title: t.installAppTitle,
+          body: t.installAppBody,
+          steps: t.installAppSteps,
+          dismiss: t.installAppDismiss,
+          openLogin: t.installAppOpenLogin,
+        }}
+      />
     </main>
   );
 }

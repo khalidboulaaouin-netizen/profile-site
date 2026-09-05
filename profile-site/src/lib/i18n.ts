@@ -249,6 +249,11 @@ export type Dictionary = {
   adsenseClientIdHelp: string;
   adsenseSlotId: string;
   adsenseSlotIdHelp: string;
+  installAppTitle: string;
+  installAppBody: string;
+  installAppSteps: string;
+  installAppDismiss: string;
+  installAppOpenLogin: string;
 };
 
 const ar: Dictionary = {
@@ -493,6 +498,11 @@ const ar: Dictionary = {
   adsenseClientIdHelp: "من adsense.google.com بحسابك انسخ Publisher ID مثل ca-pub-XXXXXXXX. الربط مجاني بعد موافقة Google على الموقع.",
   adsenseSlotId: "معرّف وحدة الإعلان (Slot)",
   adsenseSlotIdHelp: "بعد إنشاء وحدة إعلان في AdSense انسخ رقم الـ Slot (أرقام فقط). اتركه فارغاً حتى تتم الموافقة.",
+  installAppTitle: "ثبّت صفحتك كتطبيق على الآيفون",
+  installAppBody: "بعد التثبيت تفتحها من الشاشة الرئيسية مباشرة دون البحث عن الرابط، ثم تدخل حسابك وتنشر وتفتح الإعدادات.",
+  installAppSteps: "في Safari: زر المشاركة □↑ ثم «إضافة إلى الشاشة الرئيسية». بعد الفتح سجّل دخول المالك مرة واحدة.",
+  installAppDismiss: "لاحقاً",
+  installAppOpenLogin: "دخول المالك",
 };
 
 const en: Dictionary = {
@@ -737,6 +747,11 @@ const en: Dictionary = {
   adsenseClientIdHelp: "From adsense.google.com copy your Publisher ID like ca-pub-XXXXXXXX. Free after Google approves the site.",
   adsenseSlotId: "Ad unit slot ID",
   adsenseSlotIdHelp: "After creating an ad unit in AdSense, paste the slot numbers only. Leave empty until approved.",
+  installAppTitle: "Install your page as an iPhone app",
+  installAppBody: "After installing, open it from the home screen without searching for the link — then sign in, publish, and open settings.",
+  installAppSteps: "In Safari: Share □↑ then Add to Home Screen. After opening, sign in as owner once.",
+  installAppDismiss: "Later",
+  installAppOpenLogin: "Owner login",
 };
 
 const fr: Dictionary = {

@@ -1641,6 +1641,51 @@ html[data-color-mode="dark"] .btn {
   color: var(--ink);
 }
 
+.install-prompt {
+  position: fixed;
+  inset-inline: 0.75rem;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  z-index: 80;
+  pointer-events: none;
+}
+
+.install-prompt-inner {
+  pointer-events: auto;
+  max-width: 420px;
+  margin-inline: auto;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--line, #d7e0e5) 80%, transparent);
+  background: color-mix(in srgb, var(--panel, #fff) 94%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 14px 40px rgba(15, 23, 28, 0.16);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.install-prompt-inner strong {
+  font-size: 0.98rem;
+}
+
+.install-prompt-inner p {
+  margin: 0;
+  color: var(--muted, #5b6b75);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.install-steps {
+  font-weight: 600;
+  color: var(--ink, #12212b) !important;
+}
+
+.install-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
 @media (max-width: 720px) {
   .top-tools {
     justify-content: stretch;

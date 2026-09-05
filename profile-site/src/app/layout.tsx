@@ -39,21 +39,44 @@ export async function generateMetadata(): Promise<Metadata> {
     .filter(Boolean)
     .map((url) => ({ url: toAbsoluteUrl(String(url), siteUrl) }));
 
+  const brand = store.settings.brandName || store.profile.displayName || "App";
+
   return {
     metadataBase: new URL(siteUrl),
     title: {
       default: title,
-      template: `%s | ${store.settings.brandName}`,
+      template: `%s | ${brand}`,
     },
     description,
     keywords: store.settings.seoKeywords,
     authors: [{ name: store.profile.displayName }],
+    applicationName: brand,
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: brand,
+    },
+    formatDetection: {
+      telephone: false,
+    },
+    icons: {
+      icon: [
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" }],
+      shortcut: ["/icons/icon-192.png"],
+    },
+    other: {
+      "mobile-web-app-capable": "yes",
+    },
     openGraph: {
       type: "profile",
       locale: getOgLocale(store.settings.language),
       title,
       description,
-      siteName: store.settings.brandName,
+      siteName: brand,
       url: siteUrl,
       images: ogImages.length ? ogImages : undefined,
     },

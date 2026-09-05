@@ -551,6 +551,30 @@ textarea {
   scrollbar-width: thin;
 }
 
+.highlights-empty .hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+button.highlight {
+  flex: 0 0 auto;
+  width: 78px;
+  text-align: center;
+  animation: rise 0.7s ease both;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+button.highlight.has-stories .highlight-cover {
+  border-color: var(--accent, #0d6e6e);
+  box-shadow: 0 0 0 2px rgba(13, 110, 110, 0.18);
+}
+
 .highlight {
   flex: 0 0 auto;
   width: 78px;
@@ -576,6 +600,75 @@ textarea {
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.highlight-viewer .story-viewer-inner {
+  position: relative;
+  width: min(480px, 100%);
+  height: min(85vh, 860px);
+  display: grid;
+  align-content: start;
+}
+
+.highlight-viewer .story-progress {
+  position: absolute;
+  top: 0.75rem;
+  inset-inline: 0.75rem;
+  display: flex;
+  gap: 0.3rem;
+  z-index: 3;
+}
+
+.highlight-viewer .story-progress span {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.highlight-viewer .story-progress span.on {
+  background: #fff;
+}
+
+.highlight-viewer .story-viewer-head {
+  position: absolute;
+  top: 1.2rem;
+  inset-inline: 0.75rem;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  padding-top: 0.5rem;
+}
+
+.highlight-viewer .story-caption {
+  position: absolute;
+  bottom: 1.25rem;
+  inset-inline: 1rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+  z-index: 3;
+}
+
+.story-tap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.story-tap.prev {
+  inset-inline-start: 0;
+}
+
+.story-tap.next {
+  inset-inline-end: 0;
 }
 
 .highlight p {

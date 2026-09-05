@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState, useTransition } from "react";
+import type { Highlight } from "@/lib/types";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
 type StoryItem = {
@@ -33,27 +34,33 @@ export default function AdminStoriesPage() {
   const [t, setT] = useState<Dictionary>(() => getDictionary("ar"));
   const [locale, setLocale] = useState("ar");
   const [stories, setStories] = useState<StoryItem[]>([]);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [pinFor, setPinFor] = useState<string | null>(null);
+  const [selectedHighlight, setSelectedHighlight] = useState("");
+  const [newTitle, setNewTitle] = useState("");
   const [pending, startTransition] = useTransition();
 
-  const load = () =>
-    fetch("/api/stories")
-      .then((r) => r.json())
-      .then((d) => setStories(d.stories || []));
+  const load = async () => {
+    const [storiesRes, settingsRes] = await Promise.all([
+      fetch("/api/stories"),
+      fetch("/api/settings"),
+    ]);
+    const storiesData = await storiesRes.json();
+    const settingsData = await settingsRes.json();
+    setStories(storiesData.stories || []);
+    setHighlights(settingsData.highlights || []);
+    const next = normalizeLocale(settingsData.settings?.language);
+    setLocale(next);
+    setT(getDictionary(next));
+  };
 
   useEffect(() => {
-    load();
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((d) => {
-        const next = normalizeLocale(d.settings?.language);
-        setLocale(next);
-        setT(getDictionary(next));
-      })
-      .catch(() => undefined);
+    load().catch(() => undefined);
   }, []);
 
   function onCreate(e: FormEvent) {
@@ -63,6 +70,7 @@ export default function AdminStoriesPage() {
       return;
     }
     setError("");
+    setNotice("");
     startTransition(async () => {
       try {
         const imageUrl = await uploadFile(file);
@@ -87,6 +95,54 @@ export default function AdminStoriesPage() {
     startTransition(async () => {
       await fetch(`/api/stories?id=${id}`, { method: "DELETE" });
       await load();
+    });
+  }
+
+  function onSaveToHighlight(storyId: string) {
+    setError("");
+    setNotice("");
+    startTransition(async () => {
+      try {
+        const body =
+          selectedHighlight === "__new__" || !selectedHighlight
+            ? {
+                action: "saveToHighlight",
+                storyId,
+                newTitle: newTitle.trim() || undefined,
+              }
+            : {
+                action: "saveToHighlight",
+                storyId,
+                highlightId: selectedHighlight,
+              };
+
+        if ((selectedHighlight === "__new__" || !selectedHighlight) && !newTitle.trim() && selectedHighlight === "__new__") {
+          // allow default title from API
+        }
+
+        const res = await fetch("/api/stories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            selectedHighlight && selectedHighlight !== "__new__"
+              ? { action: "saveToHighlight", storyId, highlightId: selectedHighlight }
+              : {
+                  action: "saveToHighlight",
+                  storyId,
+                  newTitle: newTitle.trim() || undefined,
+                },
+          ),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t.saveFailed);
+        setHighlights(data.highlights || []);
+        setNotice(t.storySavedToHighlight);
+        setPinFor(null);
+        setSelectedHighlight("");
+        setNewTitle("");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t.saveFailed);
+      }
     });
   }
 
@@ -122,6 +178,7 @@ export default function AdminStoriesPage() {
             <textarea value={caption} onChange={(e) => setCaption(e.target.value)} />
           </label>
           {error && <p className="hint">{error}</p>}
+          {notice && <p className="hint" style={{ color: "var(--accent-deep, #0a5555)" }}>{notice}</p>}
           <button className="btn btn-primary" type="submit" disabled={pending}>
             {pending ? t.publishing : t.publishStory}
           </button>
@@ -166,41 +223,63 @@ export default function AdminStoriesPage() {
                         <div>
                           <strong>{v.name}</strong>
                           <small dir="ltr">{v.email}</small>
-                          <div>
-                            <small>
-                              {t.since} {new Date(v.viewedAt).toLocaleString(locale)}
-                            </small>
-                          </div>
-                          <button
-                            type="button"
-                            className="btn-text"
-                            disabled={pending}
-                            onClick={() => {
-                              if (!confirm(t.blockConfirm)) return;
-                              startTransition(async () => {
-                                await fetch("/api/block", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    googleId: v.googleId,
-                                    name: v.name,
-                                    email: v.email,
-                                    image: v.image,
-                                  }),
-                                });
-                                await load();
-                              });
-                            }}
-                          >
-                            {t.block}
-                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
+
+                {pinFor === story.id && (
+                  <div className="form-stack" style={{ marginTop: "0.75rem" }}>
+                    <label>
+                      {t.chooseHighlight}
+                      <select
+                        value={selectedHighlight}
+                        onChange={(e) => setSelectedHighlight(e.target.value)}
+                      >
+                        <option value="__new__">{t.createNewHighlight}</option>
+                        {highlights.map((h) => (
+                          <option key={h.id} value={h.id}>
+                            {h.title} ({h.items?.length || 0} {t.highlightItemsCount})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {(selectedHighlight === "__new__" || !selectedHighlight) && (
+                      <label>
+                        {t.newHighlightTitle}
+                        <input
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          placeholder={t.newHighlightTitle}
+                        />
+                      </label>
+                    )}
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={pending}
+                      onClick={() => onSaveToHighlight(story.id)}
+                    >
+                      {t.saveStoryToHighlight}
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="actions">
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    setPinFor(pinFor === story.id ? null : story.id);
+                    setSelectedHighlight(highlights[0]?.id || "__new__");
+                    setNotice("");
+                    setError("");
+                  }}
+                >
+                  {t.saveStoryToHighlight}
+                </button>
                 <button
                   className="btn btn-ghost"
                   type="button"

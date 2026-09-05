@@ -31,10 +31,19 @@ export type Post = {
   comments: Comment[];
 };
 
+export type HighlightItem = {
+  id: string;
+  imageUrl: string;
+  caption: string;
+  createdAt: string;
+};
+
 export type Highlight = {
   id: string;
   title: string;
   coverUrl: string;
+  /** Permanent story slides kept under the bio (no 24h expiry) */
+  items: HighlightItem[];
 };
 
 export type StoryViewer = {

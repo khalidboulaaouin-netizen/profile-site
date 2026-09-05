@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { FollowButton } from "@/components/FollowButton";
+import { HighlightsRow } from "@/components/HighlightsRow";
 import { MessageButton } from "@/components/MessageButton";
 import { PostGrid } from "@/components/PostGrid";
-import { HighlightsRow, ProfileHeader } from "@/components/ProfileHeader";
+import { ProfileHeader } from "@/components/ProfileHeader";
 import { StoryRing } from "@/components/StoryRing";
 import { auth } from "@/lib/auth";
 import { isBlocked, readStore } from "@/lib/db";
@@ -77,7 +78,11 @@ export default async function HomePage() {
         <StoryRing labels={t} />
       </Suspense>
 
-      <HighlightsRow highlights={store.highlights} label={t.highlights} />
+      <HighlightsRow
+        highlights={store.highlights}
+        label={t.highlights}
+        closeLabel={t.close}
+      />
 
       <div className="section-title">
         <h2>{t.posts}</h2>

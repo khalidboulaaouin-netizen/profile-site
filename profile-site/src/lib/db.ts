@@ -33,9 +33,9 @@ const defaultStore = (): Store => ({
   },
   posts: [],
   highlights: [
-    { id: randomUUID(), title: "لحظات", coverUrl: "" },
-    { id: randomUUID(), title: "سفر", coverUrl: "" },
-    { id: randomUUID(), title: "أعمال", coverUrl: "" },
+    { id: randomUUID(), title: "لحظات", coverUrl: "", items: [] },
+    { id: randomUUID(), title: "سفر", coverUrl: "", items: [] },
+    { id: randomUUID(), title: "أعمال", coverUrl: "", items: [] },
   ],
   stories: [],
   followers: [],
@@ -80,6 +80,22 @@ function normalizeStory(story: Story): Story {
   };
 }
 
+function normalizeHighlight(highlight: Highlight): Highlight {
+  return {
+    ...highlight,
+    title: highlight.title || "",
+    coverUrl: highlight.coverUrl || "",
+    items: Array.isArray(highlight.items)
+      ? highlight.items.map((item) => ({
+          id: item.id,
+          imageUrl: item.imageUrl,
+          caption: item.caption || "",
+          createdAt: item.createdAt || new Date().toISOString(),
+        }))
+      : [],
+  };
+}
+
 function isStoryActive(story: Story, now = Date.now()) {
   return new Date(story.expiresAt).getTime() > now;
 }
@@ -89,6 +105,7 @@ function normalizeStore(store: Store): Store {
   return {
     ...store,
     posts: (store.posts || []).map(normalizePost),
+    highlights: (store.highlights || []).map(normalizeHighlight),
     stories: (store.stories || [])
       .map(normalizeStory)
       .filter((story) => isStoryActive(story, now)),
@@ -293,9 +310,75 @@ export async function deletePost(id: string): Promise<boolean> {
 
 export async function setHighlights(highlights: Highlight[]): Promise<Highlight[]> {
   const store = await readStore();
-  store.highlights = highlights;
+  store.highlights = highlights.map(normalizeHighlight);
   await writeStore(store);
   return store.highlights;
+}
+
+export async function listHighlights(): Promise<Highlight[]> {
+  const store = await readStore();
+  return store.highlights;
+}
+
+/** Copy an active (or still-known) story into a lasting highlight under the bio. */
+export async function saveStoryToHighlight(input: {
+  storyId: string;
+  highlightId?: string;
+  newTitle?: string;
+}): Promise<Highlight | null> {
+  const store = await readStore();
+  const story = store.stories.find((s) => s.id === input.storyId);
+  if (!story) return null;
+
+  const item = {
+    id: randomUUID(),
+    imageUrl: story.imageUrl,
+    caption: story.caption || "",
+    createdAt: story.createdAt,
+  };
+
+  let highlight: Highlight | null = null;
+
+  if (input.highlightId) {
+    const idx = store.highlights.findIndex((h) => h.id === input.highlightId);
+    if (idx === -1) return null;
+    highlight = normalizeHighlight(store.highlights[idx]);
+    const already = highlight.items.some((i) => i.imageUrl === item.imageUrl);
+    if (!already) {
+      highlight.items = [...highlight.items, item];
+    }
+    if (!highlight.coverUrl) highlight.coverUrl = item.imageUrl;
+    store.highlights[idx] = highlight;
+  } else {
+    const title = (input.newTitle || "لحظات").trim().slice(0, 40) || "لحظات";
+    highlight = {
+      id: randomUUID(),
+      title,
+      coverUrl: item.imageUrl,
+      items: [item],
+    };
+    store.highlights = [...store.highlights, highlight];
+  }
+
+  await writeStore(store);
+  return highlight;
+}
+
+export async function removeHighlightItem(input: {
+  highlightId: string;
+  itemId: string;
+}): Promise<Highlight | null> {
+  const store = await readStore();
+  const idx = store.highlights.findIndex((h) => h.id === input.highlightId);
+  if (idx === -1) return null;
+  const highlight = normalizeHighlight(store.highlights[idx]);
+  highlight.items = highlight.items.filter((i) => i.id !== input.itemId);
+  if (highlight.coverUrl && !highlight.items.some((i) => i.imageUrl === highlight.coverUrl)) {
+    highlight.coverUrl = highlight.items[0]?.imageUrl || highlight.coverUrl;
+  }
+  store.highlights[idx] = highlight;
+  await writeStore(store);
+  return highlight;
 }
 
 export async function followWithGoogle(input: {

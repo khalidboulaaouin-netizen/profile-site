@@ -453,6 +453,9 @@ export default function AdminSettingsPage() {
                   }}
                 />
               </label>
+              <p className="lede" style={{ marginTop: "-0.35rem" }}>
+                {(h.items?.length || 0)} {t.highlightItemsCount}
+              </p>
             </div>
           ))}
           <button className="btn btn-primary" type="submit" disabled={busy}>

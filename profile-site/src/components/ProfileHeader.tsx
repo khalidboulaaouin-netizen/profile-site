@@ -1,4 +1,4 @@
-import type { Highlight, Profile } from "@/lib/types";
+import type { Profile } from "@/lib/types";
 
 export function VerifiedBadge({ label }: { label: string }) {
   return (
@@ -102,37 +102,5 @@ export function ProfileHeader({
         </dl>
       </div>
     </header>
-  );
-}
-
-export function HighlightsRow({
-  highlights,
-  label,
-}: {
-  highlights: Highlight[];
-  label: string;
-}) {
-  if (!highlights.length) return null;
-
-  return (
-    <section className="highlights" aria-label={label}>
-      {highlights.map((item, index) => (
-        <div
-          key={item.id}
-          className="highlight"
-          style={{ animationDelay: `${index * 80}ms` }}
-        >
-          <div className="highlight-cover">
-            {item.coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.coverUrl} alt="" />
-            ) : (
-              <span>{item.title.slice(0, 1)}</span>
-            )}
-          </div>
-          <p>{item.title}</p>
-        </div>
-      ))}
-    </section>
   );
 }

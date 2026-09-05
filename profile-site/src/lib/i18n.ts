@@ -82,6 +82,13 @@ export type Dictionary = {
   highlightTitle: string;
   highlightCover: string;
   saveHighlights: string;
+  saveStoryToHighlight: string;
+  saveToExistingHighlight: string;
+  createNewHighlight: string;
+  newHighlightTitle: string;
+  storySavedToHighlight: string;
+  highlightItemsCount: string;
+  chooseHighlight: string;
   followersTitle: string;
   followersLede: string;
   noFollowers: string;
@@ -248,6 +255,13 @@ const ar: Dictionary = {
   highlightTitle: "العنوان",
   highlightCover: "صورة الغلاف",
   saveHighlights: "حفظ أبرز اللحظات",
+  saveStoryToHighlight: "حفظ في أبرز اللحظات",
+  saveToExistingHighlight: "أضف إلى مجموعة موجودة",
+  createNewHighlight: "أنشئ مجموعة جديدة",
+  newHighlightTitle: "اسم المجموعة الجديدة",
+  storySavedToHighlight: "تم حفظ الستوري تحت البايو في أبرز اللحظات.",
+  highlightItemsCount: "ستوري محفوظة",
+  chooseHighlight: "اختر مجموعة",
   followersTitle: "المتابعون عبر Google",
   followersLede: "هؤلاء زوّار ضغطوا «متابعة عبر Google» فقط. لا يوجد تسجيل حساب مستقل لهم.",
   noFollowers: "لا متابعين بعد. فعّل Google OAuth ثم شارك رابط صفحتك.",
@@ -285,7 +299,8 @@ const ar: Dictionary = {
   noStories: "لا ستوري نشطة حالياً.",
   storyViewers: "المشاهدون",
   publishStory: "نشر ستوري",
-  publishStoryLede: "الستوري تختفي بعد 24 ساعة. من يشاهدها عبر Google يظهر اسمه هنا.",
+  publishStoryLede:
+    "الستوري تختفي بعد 24 ساعة من الحلقة أعلى الصفحة. لحفظها للمتابعين تحت البايو لأشهر، استخدم «حفظ في أبرز اللحظات».",
   activeStories: "الستوري النشطة",
   noStoryViewers: "لا مشاهدين بعد.",
   expires: "تنتهي",
@@ -415,6 +430,13 @@ const en: Dictionary = {
   highlightTitle: "Title",
   highlightCover: "Cover image",
   saveHighlights: "Save highlights",
+  saveStoryToHighlight: "Save to highlights",
+  saveToExistingHighlight: "Add to an existing set",
+  createNewHighlight: "Create a new set",
+  newHighlightTitle: "New highlight title",
+  storySavedToHighlight: "Story saved under the bio in highlights.",
+  highlightItemsCount: "saved stories",
+  chooseHighlight: "Choose a highlight",
   followersTitle: "Google followers",
   followersLede: "These visitors only pressed “Follow with Google”. They have no separate account.",
   noFollowers: "No followers yet. Enable Google OAuth, then share your page link.",
@@ -452,7 +474,8 @@ const en: Dictionary = {
   noStories: "No active stories right now.",
   storyViewers: "Viewers",
   publishStory: "Publish story",
-  publishStoryLede: "Stories disappear after 24 hours. People who view via Google appear here by name.",
+  publishStoryLede:
+    "Stories disappear from the top ring after 24 hours. To keep them under the bio for months, use “Save to highlights”.",
   activeStories: "Active stories",
   noStoryViewers: "No viewers yet.",
   expires: "Expires",

@@ -7,8 +7,10 @@ import {
   getStoryViewers,
   isBlocked,
   listActiveStories,
+  listHighlights,
   readStore,
   recordStoryView,
+  saveStoryToHighlight,
 } from "@/lib/db";
 
 export async function GET(request: Request) {
@@ -109,6 +111,24 @@ export async function POST(request: Request) {
 
   const { error } = await requireAdmin();
   if (error) return error;
+
+  if (action === "saveToHighlight") {
+    const storyId = String(body.storyId || "");
+    const highlightId = body.highlightId ? String(body.highlightId) : undefined;
+    const newTitle = body.newTitle ? String(body.newTitle) : undefined;
+    if (!storyId) {
+      return NextResponse.json({ error: "story id required" }, { status: 400 });
+    }
+    const highlight = await saveStoryToHighlight({ storyId, highlightId, newTitle });
+    if (!highlight) {
+      return NextResponse.json(
+        { error: "تعذّر الحفظ في أبرز اللحظات (تأكد أن الستوري ما زالت نشطة)" },
+        { status: 400 },
+      );
+    }
+    const highlights = await listHighlights();
+    return NextResponse.json({ highlight, highlights });
+  }
 
   const imageUrl = String(body.imageUrl || "").trim();
   const caption = String(body.caption || "").trim();

@@ -21,8 +21,8 @@ npm run dev
 ### دخول المالك (افتراضي للتطوير)
 
 - الرابط: `/login`
-- الإيميل: `admin@nabdh.app`
-- كلمة المرور: `ChangeMe123!`
+- الإيميل: `KhalidBoulaaouin@gmail.com`
+- كلمة المرور: `TempChangeMe2026!`
 
 غيّر `ADMIN_EMAIL` و`ADMIN_PASSWORD` في `.env.local` قبل النشر.
 

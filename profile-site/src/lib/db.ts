@@ -176,18 +176,21 @@ async function ensureStore(): Promise<Store> {
       const parsed = JSON.parse(raw) as Store;
       return normalizeStore(parsed);
     } catch {
-      // Corrupt JSON — keep serving defaults without overwriting blob yet.
+      // Corrupt JSON — serve defaults without clobbering Blob.
       return defaultStore();
     }
   }
 
-  // First boot only: seed persistence. Never overwrite an existing blob from
-  // the packaged demo file (see storage.readPersistedStoreJson).
+  // Missing store: serve defaults in-memory.
+  // Only seed local disk in development. Never auto-write to Blob on boot —
+  // a transient Blob read failure must not wipe production data.
   const store = defaultStore();
-  try {
-    await writePersistedStoreJson(JSON.stringify(store, null, 2));
-  } catch {
-    /* ignore first-boot write failures */
+  if (!blobEnabled()) {
+    try {
+      await writePersistedStoreJson(JSON.stringify(store, null, 2));
+    } catch {
+      /* ignore */
+    }
   }
   return store;
 }

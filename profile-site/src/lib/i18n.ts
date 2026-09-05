@@ -113,6 +113,7 @@ export type Dictionary = {
   activeStories: string;
   noStoryViewers: string;
   expires: string;
+  deleteCommentConfirm: string;
 };
 
 const ar: Dictionary = {
@@ -217,6 +218,7 @@ const ar: Dictionary = {
   activeStories: "الستوري النشطة",
   noStoryViewers: "لا مشاهدين بعد.",
   expires: "تنتهي",
+  deleteCommentConfirm: "هل تريد حذف هذا التعليق؟",
 };
 
 const en: Dictionary = {
@@ -321,6 +323,7 @@ const en: Dictionary = {
   activeStories: "Active stories",
   noStoryViewers: "No viewers yet.",
   expires: "Expires",
+  deleteCommentConfirm: "Delete this comment?",
 };
 
 const fr: Dictionary = {

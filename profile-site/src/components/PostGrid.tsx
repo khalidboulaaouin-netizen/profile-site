@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
+import { useSession } from "next-auth/react";
 import type { Comment, Post } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n";
 
@@ -39,11 +40,15 @@ export function PostGrid({
     | "sendComment"
     | "noComments"
     | "loading"
+    | "delete"
+    | "deleteCommentConfirm"
   >;
   locale?: string;
   enableLikes?: boolean;
   enableComments?: boolean;
 }) {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
   const [items, setItems] = useState(posts);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [visitorId, setVisitorId] = useState("");
@@ -117,6 +122,23 @@ export function PostGrid({
       }
       updatePost({ ...active, comments: data.comments as Comment[] });
       setCommentText("");
+    });
+  }
+
+  function onDeleteComment(commentId: string) {
+    if (!active || !isAdmin) return;
+    if (!window.confirm(labels.deleteCommentConfirm)) return;
+    startTransition(async () => {
+      const res = await fetch(
+        `/api/comments?postId=${encodeURIComponent(active.id)}&commentId=${encodeURIComponent(commentId)}`,
+        { method: "DELETE" },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Error");
+        return;
+      }
+      updatePost({ ...active, comments: data.comments as Comment[] });
     });
   }
 
@@ -197,7 +219,19 @@ export function PostGrid({
                     )}
                     {(active.comments || []).map((c) => (
                       <div key={c.id} className="comment-item">
-                        <strong>{c.authorName}</strong>
+                        <div className="comment-head">
+                          <strong>{c.authorName}</strong>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              className="comment-delete"
+                              onClick={() => onDeleteComment(c.id)}
+                              disabled={pending}
+                            >
+                              {labels.delete}
+                            </button>
+                          )}
+                        </div>
                         <p>{c.text}</p>
                         <time dateTime={c.createdAt}>
                           {new Date(c.createdAt).toLocaleString(locale)}

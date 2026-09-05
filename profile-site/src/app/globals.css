@@ -196,6 +196,30 @@ textarea {
   border: 1px solid var(--line);
 }
 
+.comment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.comment-delete {
+  border: 0;
+  background: transparent;
+  color: var(--danger, #b42318);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  flex-shrink: 0;
+}
+
+.comment-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .comment-item p {
   margin: 0.25rem 0;
 }

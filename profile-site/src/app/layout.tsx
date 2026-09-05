@@ -102,6 +102,9 @@ export default async function RootLayout({
     <html lang={locale.code} dir={locale.dir} data-color-mode={colorMode === "dark" ? "dark" : "light"}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: colorBootScript }} />
+        {adsenseClient ? (
+          <meta name="google-adsense-account" content={adsenseClient} />
+        ) : null}
         <GoogleAnalytics measurementId={gaId} />
         <GoogleAdSense clientId={adsenseClient} />
       </head>

@@ -37,14 +37,13 @@ export async function readPersistedStoreJson(): Promise<string | null> {
       const meta = await head(STORE_BLOB_PATH);
       const res = await fetch(meta.url, {
         cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-        },
       });
       if (!res.ok) return null;
       return await res.text();
     } catch {
-      // Fall through to local file (dev / first boot)
+      // Blob missing or temporarily unavailable — do NOT fall back to the
+      // packaged seed file, or a later write would wipe production data.
+      return null;
     }
   }
 
@@ -63,9 +62,9 @@ export async function writePersistedStoreJson(json: string): Promise<void> {
       addRandomSuffix: false,
       allowOverwrite: true,
     });
+    return;
   }
 
-  // Always mirror locally for local/dev and warmer instances
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(STORE_PATH, json, "utf8");
 }

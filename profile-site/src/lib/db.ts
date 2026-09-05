@@ -172,17 +172,23 @@ function normalizeStore(store: Store): Store {
 async function ensureStore(): Promise<Store> {
   const raw = await readPersistedStoreJson();
   if (raw) {
-    const parsed = JSON.parse(raw) as Store;
-    const normalized = normalizeStore(parsed);
-    // Persist cleanup of expired stories when needed
-    if ((parsed.stories || []).length !== normalized.stories.length) {
-      await writePersistedStoreJson(JSON.stringify(normalized, null, 2));
+    try {
+      const parsed = JSON.parse(raw) as Store;
+      return normalizeStore(parsed);
+    } catch {
+      // Corrupt JSON — keep serving defaults without overwriting blob yet.
+      return defaultStore();
     }
-    return normalized;
   }
 
+  // First boot only: seed persistence. Never overwrite an existing blob from
+  // the packaged demo file (see storage.readPersistedStoreJson).
   const store = defaultStore();
-  await writePersistedStoreJson(JSON.stringify(store, null, 2));
+  try {
+    await writePersistedStoreJson(JSON.stringify(store, null, 2));
+  } catch {
+    /* ignore first-boot write failures */
+  }
   return store;
 }
 

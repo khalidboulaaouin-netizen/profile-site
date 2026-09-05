@@ -668,6 +668,22 @@ textarea {
   letter-spacing: 0.02em;
 }
 
+.hidden-badge {
+  display: inline-block;
+  margin-inline-end: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(90, 98, 104, 0.14);
+  color: #4a5560;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.admin-item.is-hidden {
+  opacity: 0.72;
+  background: rgba(248, 250, 251, 0.9);
+}
+
 .modal-sheet.modal-reel {
   grid-template-columns: 0.9fr 1fr;
 }

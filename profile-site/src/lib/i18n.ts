@@ -52,6 +52,9 @@ export type Dictionary = {
   mediaFile: string;
   mediaHelp: string;
   reelBadge: string;
+  hidePost: string;
+  showPost: string;
+  hiddenBadge: string;
   currentPosts: string;
   noPostsYet: string;
   delete: string;
@@ -214,6 +217,9 @@ const ar: Dictionary = {
   mediaFile: "صورة أو فيديو (ريلز)",
   mediaHelp: "الصور حتى 8MB. الفيديو (mp4/webm/mov) حتى 80MB — مثالي للريلز القصيرة.",
   reelBadge: "ريلز",
+  hidePost: "إخفاء",
+  showPost: "إظهار",
+  hiddenBadge: "مخفي",
   currentPosts: "المنشورات الحالية",
   noPostsYet: "لا منشورات بعد.",
   delete: "حذف",
@@ -378,6 +384,9 @@ const en: Dictionary = {
   mediaFile: "Photo or reel video",
   mediaHelp: "Images up to 8MB. Video (mp4/webm/mov) up to 80MB — best for short reels.",
   reelBadge: "Reel",
+  hidePost: "Hide",
+  showPost: "Unhide",
+  hiddenBadge: "Hidden",
   currentPosts: "Current posts",
   noPostsYet: "No posts yet.",
   delete: "Delete",

@@ -65,6 +65,7 @@ function normalizePost(post: Post): Post {
   return {
     ...post,
     mediaType: post.mediaType === "video" ? "video" : "image",
+    hidden: Boolean(post.hidden),
     likes: post.likes ?? 0,
     likedBy: Array.isArray(post.likedBy) ? post.likedBy : [],
     comments: Array.isArray(post.comments) ? post.comments : [],
@@ -189,6 +190,7 @@ export async function addPost(input: {
     id: randomUUID(),
     imageUrl: input.imageUrl,
     mediaType: input.mediaType === "video" ? "video" : "image",
+    hidden: false,
     caption: input.caption,
     createdAt: new Date().toISOString(),
     likes: 0,
@@ -210,6 +212,7 @@ export async function toggleLike(
   if (idx === -1) return null;
 
   const post = normalizePost(store.posts[idx]);
+  if (post.hidden) return null;
   const liked = post.likedBy.includes(visitorId);
   if (liked) {
     post.likedBy = post.likedBy.filter((id) => id !== visitorId);
@@ -232,6 +235,7 @@ export async function addComment(
   if (idx === -1) return null;
 
   const post = normalizePost(store.posts[idx]);
+  if (post.hidden) return null;
   const authorName = input.authorName.trim().slice(0, 60);
   const text = input.text.trim().slice(0, 500);
   if (!authorName || !text) return null;
@@ -266,12 +270,15 @@ export async function deleteComment(
 
 export async function updatePost(
   id: string,
-  patch: Partial<Pick<Post, "caption" | "imageUrl">>,
+  patch: Partial<Pick<Post, "caption" | "imageUrl" | "hidden" | "mediaType">>,
 ): Promise<Post | null> {
   const store = await readStore();
   const idx = store.posts.findIndex((p) => p.id === id);
   if (idx === -1) return null;
-  store.posts[idx] = { ...store.posts[idx], ...patch };
+  const clean = Object.fromEntries(
+    Object.entries(patch).filter(([, value]) => value !== undefined),
+  ) as Partial<Post>;
+  store.posts[idx] = normalizePost({ ...store.posts[idx], ...clean });
   await writeStore(store);
   return store.posts[idx];
 }

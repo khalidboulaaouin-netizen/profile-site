@@ -22,6 +22,8 @@ export type Post = {
   imageUrl: string;
   /** image = photo post, video = reel-style clip */
   mediaType: "image" | "video";
+  /** When true, post stays in admin but is hidden from the public page */
+  hidden: boolean;
   caption: string;
   createdAt: string;
   likes: number;

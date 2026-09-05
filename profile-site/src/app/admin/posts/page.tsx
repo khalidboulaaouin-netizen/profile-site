@@ -84,6 +84,25 @@ export default function AdminPostsPage() {
     await load();
   }
 
+  async function onToggleHidden(post: Post) {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/posts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: post.id, hidden: !post.hidden }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t.saveFailed);
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? data.post : p)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.saveFailed);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="admin-page">
       <nav className="admin-nav">
@@ -130,7 +149,7 @@ export default function AdminPostsPage() {
         <h2>{t.currentPosts}</h2>
         <div className="admin-list">
           {posts.map((post) => (
-            <div key={post.id} className="admin-item">
+            <div key={post.id} className={`admin-item ${post.hidden ? "is-hidden" : ""}`}>
               {post.mediaType === "video" ? (
                 <video src={post.imageUrl} muted playsInline preload="metadata" />
               ) : (
@@ -142,6 +161,7 @@ export default function AdminPostsPage() {
                   {post.mediaType === "video" && (
                     <span className="reel-badge">{t.reelBadge}</span>
                   )}{" "}
+                  {post.hidden && <span className="hidden-badge">{t.hiddenBadge}</span>}{" "}
                   {post.caption || t.noCaption}
                 </p>
                 <small style={{ color: "var(--muted)" }}>
@@ -149,6 +169,14 @@ export default function AdminPostsPage() {
                 </small>
               </div>
               <div className="actions">
+                <button
+                  className="btn btn-ghost"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => onToggleHidden(post)}
+                >
+                  {post.hidden ? t.showPost : t.hidePost}
+                </button>
                 <button className="btn btn-ghost" type="button" onClick={() => onDelete(post.id)}>
                   {t.delete}
                 </button>

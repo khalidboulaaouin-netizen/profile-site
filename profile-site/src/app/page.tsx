@@ -54,7 +54,7 @@ export default async function HomePage() {
       <ProfileHeader
         profile={store.profile}
         brandName={store.settings.brandName}
-        postsCount={store.posts.length}
+        postsCount={store.posts.filter((p) => !p.hidden).length}
         followersCount={store.followers.length}
         verified={store.settings.verified}
         hideFollowers={store.settings.hideFollowers}
@@ -84,7 +84,7 @@ export default async function HomePage() {
       </div>
 
       <PostGrid
-        posts={store.posts}
+        posts={store.posts.filter((p) => !p.hidden)}
         labels={t}
         locale={locale}
         enableLikes={store.settings.enableLikes}

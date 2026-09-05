@@ -35,6 +35,7 @@ export async function PATCH(request: Request) {
   const post = await updatePost(id, {
     caption: body.caption !== undefined ? String(body.caption) : undefined,
     imageUrl: body.imageUrl !== undefined ? String(body.imageUrl) : undefined,
+    hidden: body.hidden !== undefined ? Boolean(body.hidden) : undefined,
   });
 
   if (!post) return NextResponse.json({ error: "المنشور غير موجود" }, { status: 404 });

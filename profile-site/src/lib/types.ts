@@ -70,6 +70,9 @@ export type Story = {
   expiresAt: string;
   viewers: StoryViewer[];
   mediaType?: "image" | "video";
+  likes: number;
+  likedBy: string[];
+  comments: Comment[];
 };
 
 export type Follower = {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import type { Comment } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n";
 
 const STORY_MS = 5000;
@@ -16,16 +17,34 @@ type PublicStory = {
   viewerCount: number;
   viewedByMe: boolean;
   mediaType?: "image" | "video";
+  likes?: number;
+  likedBy?: string[];
+  comments?: Comment[];
 };
 
 type StoriesResponse = {
   stories: PublicStory[];
   profile: { displayName: string; avatarUrl: string };
   googleConfigured: boolean;
+  enableLikes?: boolean;
+  enableComments?: boolean;
 };
+
+function getVisitorId() {
+  if (typeof window === "undefined") return "";
+  const key = "hodouri_visitor_id";
+  let id = window.localStorage.getItem(key);
+  if (!id) {
+    id = crypto.randomUUID();
+    window.localStorage.setItem(key, id);
+  }
+  return id;
+}
 
 export function StoryRing({
   labels,
+  enableLikes = true,
+  enableComments = true,
 }: {
   labels: Pick<
     Dictionary,
@@ -38,7 +57,20 @@ export function StoryRing({
     | "loading"
     | "noStories"
     | "storyViewers"
+    | "like"
+    | "unlike"
+    | "likesCount"
+    | "comments"
+    | "addComment"
+    | "commentName"
+    | "commentText"
+    | "sendComment"
+    | "noComments"
+    | "delete"
+    | "deleteCommentConfirm"
   >;
+  enableLikes?: boolean;
+  enableComments?: boolean;
 }) {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -47,6 +79,16 @@ export function StoryRing({
   const [index, setIndex] = useState(0);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
+  const [visitorId, setVisitorId] = useState("");
+  const [paused, setPaused] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [authorName, setAuthorName] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [error, setError] = useState("");
+
+  const isAdmin = session?.user?.role === "admin";
+  const likesEnabled = enableLikes && data?.enableLikes !== false;
+  const commentsEnabled = enableComments && data?.enableComments !== false;
 
   const load = () =>
     fetch("/api/stories")
@@ -56,6 +98,9 @@ export function StoryRing({
 
   useEffect(() => {
     load();
+    setVisitorId(getVisitorId());
+    const saved = window.localStorage.getItem("hodouri_comment_name");
+    if (saved) setAuthorName(saved);
   }, [session]);
 
   useEffect(() => {
@@ -70,12 +115,29 @@ export function StoryRing({
   const stories = data?.stories || [];
   const active = stories[index] || null;
   const hasUnseen = useMemo(() => stories.some((s) => !s.viewedByMe), [stories]);
+  const liked = Boolean(active && visitorId && active.likedBy?.includes(visitorId));
+
+  function patchActive(patch: Partial<PublicStory>) {
+    if (!active) return;
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        stories: prev.stories.map((s) => (s.id === active.id ? { ...s, ...patch } : s)),
+      };
+    });
+  }
 
   function closeViewer() {
     setOpen(false);
+    setShowComments(false);
+    setPaused(false);
+    setError("");
   }
 
   function goNext() {
+    setShowComments(false);
+    setPaused(false);
     setIndex((i) => {
       if (i >= stories.length - 1) {
         setOpen(false);
@@ -86,6 +148,8 @@ export function StoryRing({
   }
 
   function goPrev() {
+    setShowComments(false);
+    setPaused(false);
     setIndex((i) => Math.max(0, i - 1));
   }
 
@@ -107,6 +171,78 @@ export function StoryRing({
     setIndex(0);
   }
 
+  function onLike() {
+    if (!active || !visitorId || !likesEnabled) return;
+    startTransition(async () => {
+      const res = await fetch("/api/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "like",
+          storyId: active.id,
+          visitorId,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) return;
+      patchActive({
+        likes: payload.likes,
+        likedBy: payload.likedBy || [],
+      });
+    });
+  }
+
+  async function onComment(e: FormEvent) {
+    e.preventDefault();
+    if (!active || !commentsEnabled) return;
+    setError("");
+    const name = authorName.trim();
+    const text = commentText.trim();
+    if (!name || !text) return;
+    window.localStorage.setItem("hodouri_comment_name", name);
+    startTransition(async () => {
+      const res = await fetch("/api/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "comment",
+          storyId: active.id,
+          authorName: name,
+          text,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) {
+        setError(payload.error || "Error");
+        return;
+      }
+      patchActive({ comments: payload.comments || [] });
+      setCommentText("");
+    });
+  }
+
+  function onDeleteComment(commentId: string) {
+    if (!active || !isAdmin) return;
+    if (!window.confirm(labels.deleteCommentConfirm)) return;
+    startTransition(async () => {
+      const res = await fetch("/api/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "deleteComment",
+          storyId: active.id,
+          commentId,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) {
+        setError(payload.error || "Error");
+        return;
+      }
+      patchActive({ comments: payload.comments || [] });
+    });
+  }
+
   useEffect(() => {
     if (!open || !active || session?.user?.role !== "follower") return;
     startTransition(async () => {
@@ -123,25 +259,27 @@ export function StoryRing({
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeViewer();
+      if (paused || showComments) return;
       if (e.key === "ArrowRight") goNext();
       if (e.key === "ArrowLeft") goPrev();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, stories.length]);
+  }, [open, stories.length, paused, showComments]);
 
-  const isVideo = active?.mediaType === "video" || /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(active?.imageUrl || "");
+  const isVideo =
+    active?.mediaType === "video" ||
+    /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(active?.imageUrl || "");
 
   useEffect(() => {
-    if (!open || !active) return;
-    // Videos advance on ended (with a long safety timeout). Images use the fixed timer.
+    if (!open || !active || paused || showComments) return;
     if (isVideo) {
       const timer = window.setTimeout(goNext, 60_000);
       return () => window.clearTimeout(timer);
     }
     const timer = window.setTimeout(goNext, STORY_MS);
     return () => window.clearTimeout(timer);
-  }, [open, active?.id, stories.length, isVideo]);
+  }, [open, active?.id, stories.length, isVideo, paused, showComments]);
 
   if (!stories.length) return null;
 
@@ -161,50 +299,178 @@ export function StoryRing({
           </span>
           <span className="story-label">{labels.yourStory}</span>
         </button>
+        {stories.length > 1 && <span className="story-count-pill">{stories.length}</span>}
         {message && <p className="hint">{message}</p>}
       </section>
 
       {open && active && (
-        <div className="story-viewer" role="dialog" aria-modal="true">
+        <div
+          className={`story-viewer ${showComments ? "is-paused" : ""}`}
+          role="dialog"
+          aria-modal="true"
+        >
           <div className="story-progress">
             {stories.map((story, i) => (
               <span
                 key={story.id}
                 className={`story-progress-bar ${
                   i < index ? "done" : i === index ? "active" : ""
-                }`}
+                } ${paused || showComments ? "paused" : ""}`}
               >
                 <i />
               </span>
             ))}
           </div>
 
-          {isVideo ? (
-            <video
-              key={active.id}
-              className="story-media"
-              src={active.imageUrl}
-              autoPlay
-              playsInline
-              controls={false}
-              onEnded={goNext}
-            />
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={active.imageUrl} alt={active.caption || labels.stories} className="story-media" />
-          )}
+          <div className="story-stage">
+            {isVideo ? (
+              <video
+                key={active.id}
+                className="story-media"
+                src={active.imageUrl}
+                autoPlay
+                playsInline
+                controls={false}
+                onEnded={() => {
+                  if (!paused && !showComments) goNext();
+                }}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={active.imageUrl}
+                alt={active.caption || labels.stories}
+                className="story-media"
+              />
+            )}
 
-          <div className="story-top">
-            <div className="story-owner">
-              <strong>{data?.profile.displayName}</strong>
-              {pending && <span>{labels.loading}</span>}
+            <div className="story-top">
+              <div className="story-owner">
+                <strong>{data?.profile.displayName}</strong>
+                {stories.length > 1 && (
+                  <span className="story-index">
+                    {index + 1}/{stories.length}
+                  </span>
+                )}
+                {pending && <span>{labels.loading}</span>}
+              </div>
+              <button type="button" className="story-close" onClick={closeViewer}>
+                ×
+              </button>
             </div>
-            <button type="button" className="story-close" onClick={closeViewer}>
-              ×
-            </button>
+
+            {active.caption ? <p className="story-caption">{active.caption}</p> : null}
+
+            {(likesEnabled || commentsEnabled) && (
+              <div className="story-ig-bar">
+                {likesEnabled && (
+                  <button
+                    type="button"
+                    className={`story-ig-btn ${liked ? "is-liked" : ""}`}
+                    onClick={onLike}
+                    disabled={pending || !visitorId}
+                    aria-label={liked ? labels.unlike : labels.like}
+                  >
+                    {liked ? "♥" : "♡"}
+                  </button>
+                )}
+                {commentsEnabled && (
+                  <button
+                    type="button"
+                    className="story-ig-btn"
+                    onClick={() => {
+                      setShowComments((v) => {
+                        const next = !v;
+                        setPaused(next);
+                        return next;
+                      });
+                    }}
+                    aria-label={labels.comments}
+                  >
+                    💬
+                  </button>
+                )}
+                {likesEnabled && (
+                  <span className="story-ig-count">
+                    {active.likes || 0} {labels.likesCount}
+                  </span>
+                )}
+                {commentsEnabled && (
+                  <span className="story-ig-count">
+                    {active.comments?.length || 0} {labels.comments}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
-          {active.caption && <p className="story-caption">{active.caption}</p>}
+          {showComments && commentsEnabled && (
+            <div className="story-comments-panel">
+              <div className="story-comments-head">
+                <strong>{labels.comments}</strong>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setShowComments(false);
+                    setPaused(false);
+                  }}
+                >
+                  {labels.close}
+                </button>
+              </div>
+              <div className="story-comments-list">
+                {(active.comments || []).length === 0 && (
+                  <p className="hint">{labels.noComments}</p>
+                )}
+                {(active.comments || []).map((c) => (
+                  <div key={c.id} className="story-comment-item">
+                    <div className="comment-head">
+                      <strong>{c.authorName}</strong>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          className="comment-delete"
+                          onClick={() => onDeleteComment(c.id)}
+                          disabled={pending}
+                        >
+                          {labels.delete}
+                        </button>
+                      )}
+                    </div>
+                    <p>{c.text}</p>
+                  </div>
+                ))}
+              </div>
+              <form className="form-stack story-comment-form" onSubmit={onComment}>
+                <label>
+                  {labels.commentName}
+                  <input
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    required
+                    maxLength={60}
+                    onFocus={() => setPaused(true)}
+                  />
+                </label>
+                <label>
+                  {labels.addComment}
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder={labels.commentText}
+                    required
+                    maxLength={500}
+                    onFocus={() => setPaused(true)}
+                  />
+                </label>
+                {error && <p className="hint">{error}</p>}
+                <button className="btn btn-primary" type="submit" disabled={pending}>
+                  {pending ? labels.loading : labels.sendComment}
+                </button>
+              </form>
+            </div>
+          )}
 
           <button
             type="button"

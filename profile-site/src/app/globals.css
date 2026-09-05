@@ -2011,3 +2011,132 @@ html[data-color-mode="dark"] .btn {
   gap: 0.5rem;
   font-weight: 600;
 }
+
+
+.story-count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.35rem;
+  margin-inline-start: 0.35rem;
+  border-radius: 999px;
+  background: var(--accent, #0095f6);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.story-stage {
+  position: relative;
+  width: min(480px, 100%);
+  display: grid;
+  place-items: center;
+}
+
+.story-index {
+  margin-inline-start: 0.5rem;
+  opacity: 0.8;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.story-ig-bar {
+  position: absolute;
+  inset-inline: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.story-ig-btn {
+  appearance: none;
+  border: 0;
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-ig-btn.is-liked {
+  color: #ff3b5c;
+}
+
+.story-ig-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.story-ig-count {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.story-comments-panel {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 5;
+  max-height: 55vh;
+  overflow: auto;
+  padding: 0.9rem 1rem 1.1rem;
+  background: rgba(12, 18, 24, 0.94);
+  color: #fff;
+  border-radius: 18px 18px 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.story-comments-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.story-comments-list {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 28vh;
+  overflow: auto;
+}
+
+.story-comment-item {
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.story-comment-item p {
+  margin: 0.2rem 0 0;
+}
+
+.story-comment-form label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.story-comment-form input,
+.story-comment-form textarea {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.story-progress-bar.paused i {
+  animation-play-state: paused !important;
+}
+
+.story-viewer.is-paused .story-progress-bar.active i {
+  animation-play-state: paused !important;
+}

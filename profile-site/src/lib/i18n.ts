@@ -435,7 +435,7 @@ const ar: Dictionary = {
   storyViewers: "المشاهدون",
   publishStory: "نشر ستوري",
   publishStoryLede:
-    "الستوري تختفي بعد 24 ساعة من الحلقة أعلى الصفحة. لحفظها للمتابعين تحت البايو لأشهر، استخدم «حفظ في أبرز اللحظات».",
+    "يمكنك نشر أكثر من ستوري في نفس اليوم. كل ستوري تختفي بعد 24 ساعة من الحلقة أعلى الصفحة. لحفظها تحت البايو استخدم «حفظ في أبرز اللحظات».",
   activeStories: "الستوري النشطة",
   noStoryViewers: "لا مشاهدين بعد.",
   expires: "تنتهي",
@@ -718,7 +718,7 @@ const en: Dictionary = {
   storyViewers: "Viewers",
   publishStory: "Publish story",
   publishStoryLede:
-    "Stories disappear from the top ring after 24 hours. To keep them under the bio for months, use “Save to highlights”.",
+    "You can publish multiple stories in the same day. Each story disappears from the top ring after 24 hours. To keep one under the bio, use “Save to highlights”.",
   activeStories: "Active stories",
   noStoryViewers: "No viewers yet.",
   expires: "Expires",

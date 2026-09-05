@@ -124,11 +124,27 @@ function inferMediaType(
 }
 
 function normalizeStory(story: Story): Story {
+  const likedBy = Array.isArray(story.likedBy)
+    ? story.likedBy.map(String).filter(Boolean)
+    : [];
+  const comments = Array.isArray(story.comments)
+    ? story.comments
+        .map((c) => ({
+          id: String(c.id || randomUUID()),
+          authorName: String(c.authorName || "").trim().slice(0, 60),
+          text: String(c.text || "").trim().slice(0, 500),
+          createdAt: String(c.createdAt || new Date().toISOString()),
+        }))
+        .filter((c) => c.authorName && c.text)
+    : [];
   return {
     ...story,
     caption: story.caption || "",
     viewers: Array.isArray(story.viewers) ? story.viewers : [],
     mediaType: inferMediaType(story.imageUrl, (story as Story).mediaType),
+    likedBy,
+    likes: likedBy.length,
+    comments,
   };
 }
 
@@ -707,6 +723,9 @@ export async function addStory(input: {
     expiresAt: new Date(now + STORY_TTL_MS).toISOString(),
     viewers: [],
     mediaType: inferMediaType(input.imageUrl, input.mediaType),
+    likes: 0,
+    likedBy: [],
+    comments: [],
   };
   await mutateStore((draft) => {
     draft.stories = [story, ...(draft.stories || [])];
@@ -721,6 +740,76 @@ export async function deleteStory(id: string): Promise<boolean> {
   await writeStore(store);
   return store.stories.length < before;
 }
+
+export async function toggleStoryLike(
+  storyId: string,
+  visitorId: string,
+): Promise<{ story: Story; liked: boolean } | null> {
+  const id = String(visitorId || "").slice(0, 80);
+  if (!storyId || !id) return null;
+  let result: { story: Story; liked: boolean } | null = null;
+  await mutateStore((draft) => {
+    if (!draft.settings.enableLikes) return;
+    const i = draft.stories.findIndex((s) => s.id === storyId);
+    if (i === -1) return;
+    const story = normalizeStory(draft.stories[i]);
+    if (!isStoryActive(story)) return;
+    const liked = story.likedBy.includes(id);
+    story.likedBy = liked
+      ? story.likedBy.filter((v) => v !== id)
+      : [...story.likedBy, id];
+    story.likes = story.likedBy.length;
+    draft.stories[i] = story;
+    result = { story, liked: !liked };
+  });
+  return result;
+}
+
+export async function addStoryComment(
+  storyId: string,
+  input: { authorName: string; text: string },
+): Promise<Story | null> {
+  const authorName = input.authorName.trim().slice(0, 60);
+  const text = input.text.trim().slice(0, 500);
+  if (!storyId || !authorName || !text) return null;
+  let result: Story | null = null;
+  await mutateStore((draft) => {
+    if (!draft.settings.enableComments) return;
+    const i = draft.stories.findIndex((s) => s.id === storyId);
+    if (i === -1) return;
+    const story = normalizeStory(draft.stories[i]);
+    if (!isStoryActive(story)) return;
+    story.comments = [
+      ...story.comments,
+      {
+        id: randomUUID(),
+        authorName,
+        text,
+        createdAt: new Date().toISOString(),
+      },
+    ];
+    draft.stories[i] = story;
+    result = story;
+  });
+  return result;
+}
+
+export async function deleteStoryComment(
+  storyId: string,
+  commentId: string,
+): Promise<Story | null> {
+  let result: Story | null = null;
+  await mutateStore((draft) => {
+    const i = draft.stories.findIndex((s) => s.id === storyId);
+    if (i === -1) return;
+    const story = normalizeStory(draft.stories[i]);
+    story.comments = story.comments.filter((c) => c.id !== commentId);
+    draft.stories[i] = story;
+    result = story;
+  });
+  return result;
+}
+
 
 export async function recordStoryView(input: {
   storyId: string;

@@ -156,7 +156,11 @@ export default async function HomePage() {
       />
 
       <Suspense fallback={null}>
-        <StoryRing labels={t} />
+        <StoryRing
+        labels={t}
+        enableLikes={store.settings.enableLikes}
+        enableComments={store.settings.enableComments}
+      />
       </Suspense>
 
       <HighlightsRow

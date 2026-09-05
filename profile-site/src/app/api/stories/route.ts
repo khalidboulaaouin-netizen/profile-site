@@ -11,6 +11,9 @@ import {
   readStore,
   recordStoryView,
   saveStoryToHighlight,
+  toggleStoryLike,
+  addStoryComment,
+  deleteStoryComment,
 } from "@/lib/db";
 
 export async function GET(request: Request) {
@@ -57,12 +60,17 @@ export async function GET(request: Request) {
         session?.user?.role === "follower"
           ? story.viewers.some((v) => v.googleId === session.user.id)
           : false,
+      likes: story.likes || 0,
+      likedBy: story.likedBy || [],
+      comments: story.comments || [],
     })),
     profile: {
       displayName: store.profile.displayName,
       avatarUrl: store.profile.avatarUrl,
     },
     googleConfigured: isGoogleAuthConfigured(),
+    enableLikes: store.settings.enableLikes !== false,
+    enableComments: store.settings.enableComments !== false,
   });
 }
 
@@ -108,6 +116,53 @@ export async function POST(request: Request) {
       alreadyViewed: result.alreadyViewed,
       viewerCount: result.story.viewers.length,
     });
+  }
+
+  if (action === "like" || action === "comment") {
+    const session = await auth();
+    if (session?.user?.role === "follower" && (await isBlocked(session.user.id))) {
+      return NextResponse.json({ error: "لا يمكنك التفاعل" }, { status: 403 });
+    }
+  }
+
+  if (action === "like") {
+    const storyId = String(body.storyId || "");
+    const visitorId = String(body.visitorId || "").slice(0, 80);
+    if (!storyId || !visitorId) {
+      return NextResponse.json({ error: "بيانات غير مكتملة" }, { status: 400 });
+    }
+    const result = await toggleStoryLike(storyId, visitorId);
+    if (!result) {
+      return NextResponse.json({ error: "الستوري غير موجودة أو الإعجاب معطّل" }, { status: 404 });
+    }
+    return NextResponse.json({
+      likes: result.story.likes,
+      liked: result.liked,
+      likedBy: result.story.likedBy,
+    });
+  }
+
+  if (action === "comment") {
+    const storyId = String(body.storyId || "");
+    const authorName = String(body.authorName || "");
+    const text = String(body.text || "");
+    const story = await addStoryComment(storyId, { authorName, text });
+    if (!story) {
+      return NextResponse.json({ error: "تعذّر إضافة التعليق" }, { status: 400 });
+    }
+    return NextResponse.json({ comments: story.comments }, { status: 201 });
+  }
+
+  if (action === "deleteComment") {
+    const { error } = await requireAdmin();
+    if (error) return error;
+    const storyId = String(body.storyId || "");
+    const commentId = String(body.commentId || "");
+    const story = await deleteStoryComment(storyId, commentId);
+    if (!story) {
+      return NextResponse.json({ error: "غير موجود" }, { status: 404 });
+    }
+    return NextResponse.json({ comments: story.comments });
   }
 
   const { error } = await requireAdmin();

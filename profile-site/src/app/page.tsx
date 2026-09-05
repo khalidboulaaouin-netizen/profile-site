@@ -7,6 +7,7 @@ import { ProfileHeader } from "@/components/ProfileHeader";
 import { ShareButton } from "@/components/ShareButton";
 import { StoryRing } from "@/components/StoryRing";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { VisitTracker } from "@/components/VisitTracker";
 import { auth } from "@/lib/auth";
 import { isBlocked, readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
@@ -70,6 +71,7 @@ export default async function HomePage() {
 
   return (
     <main className="site-frame">
+      <VisitTracker />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -24,6 +24,7 @@ export default async function AdminHome() {
           messages: t.messages,
           settings: t.settings,
           followers: t.followers,
+          stats: t.stats,
           viewPage: t.viewPage,
           notifications: t.notifications,
           markAllRead: t.markAllRead,

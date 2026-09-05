@@ -141,6 +141,27 @@ export type SiteSettings = {
   publicSiteUrl: string;
   /** Preferred color mode for visitors (also overridable in browser) */
   colorMode: "light" | "dark" | "system";
+  /**
+   * Optional free Google Analytics 4 Measurement ID (e.g. G-XXXXXXXX).
+   * Leave empty to use only built-in free stats.
+   */
+  gaMeasurementId: string;
+};
+
+export type AnalyticsDay = {
+  /** YYYY-MM-DD (UTC) */
+  date: string;
+  views: number;
+  uniqueVisitors: number;
+  /** ISO country codes → view counts */
+  countries: Record<string, number>;
+  /** Short visitor hashes for the day (capped) — not shown publicly */
+  visitorHashes: string[];
+};
+
+export type Analytics = {
+  totalViews: number;
+  days: AnalyticsDay[];
 };
 
 export type OwnerNotification = {
@@ -163,4 +184,5 @@ export type Store = {
   conversations: Conversation[];
   settings: SiteSettings;
   notifications: OwnerNotification[];
+  analytics: Analytics;
 };

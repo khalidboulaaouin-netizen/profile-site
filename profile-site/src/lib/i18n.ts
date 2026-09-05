@@ -215,6 +215,25 @@ export type Dictionary = {
   backupExported: string;
   backupImported: string;
   backupFailed: string;
+  stats: string;
+  statsTitle: string;
+  statsLede: string;
+  statsLoadFailed: string;
+  statsTodayViews: string;
+  statsTodayUnique: string;
+  statsLast7: string;
+  statsLast30: string;
+  statsTotalViews: string;
+  statsDailyTitle: string;
+  statsDailyLede: string;
+  statsBarLegend: string;
+  statsCountriesTitle: string;
+  statsCountriesLede: string;
+  statsEmpty: string;
+  statsLimitsTitle: string;
+  statsLimitsLede: string;
+  gaMeasurementId: string;
+  gaMeasurementIdHelp: string;
 };
 
 const ar: Dictionary = {
@@ -425,6 +444,25 @@ const ar: Dictionary = {
   backupExported: "تم تنزيل النسخة الاحتياطية.",
   backupImported: "تم استيراد النسخة الاحتياطية.",
   backupFailed: "فشلت عملية النسخة الاحتياطية.",
+  stats: "الإحصائيات",
+  statsTitle: "إحصائيات الصفحة (مجاناً)",
+  statsLede: "زيارات يومية والدول تقريباً — بدون دفع. العمر والجنس غير متاحين بدقة من Google مجاناً.",
+  statsLoadFailed: "تعذّر تحميل الإحصائيات.",
+  statsTodayViews: "زيارات اليوم",
+  statsTodayUnique: "زوار فريدون اليوم",
+  statsLast7: "آخر 7 أيام",
+  statsLast30: "آخر 30 يوماً",
+  statsTotalViews: "إجمالي الزيارات",
+  statsDailyTitle: "الزيارات اليومية",
+  statsDailyLede: "كل صف: التاريخ ثم الزيارات / الزوار الفريدون.",
+  statsBarLegend: "الشريط يوضح حجم الزيارات لكل يوم.",
+  statsCountriesTitle: "الدول",
+  statsCountriesLede: "حسب ترويسة الدولة من الاستضافة المجانية (تقريبي).",
+  statsEmpty: "لا بيانات بعد. ستظهر بعد زيارات الصفحة العامة.",
+  statsLimitsTitle: "حدود مهمة",
+  statsLimitsLede: "العمر والجنس غير متوفرين بدقة عبر متابعة Google المجانية. لبيانات أغنى مجاناً ضع معرّف Google Analytics (G-...) في الإعدادات.",
+  gaMeasurementId: "معرّف Google Analytics المجاني (اختياري)",
+  gaMeasurementIdHelp: "من analytics.google.com أنشئ عقاراً مجانياً وانسخ Measurement ID مثل G-XXXX. اتركه فارغاً إن اكتفيت بالإحصائيات داخل الموقع.",
 };
 
 const en: Dictionary = {
@@ -635,6 +673,25 @@ const en: Dictionary = {
   backupExported: "Backup downloaded.",
   backupImported: "Backup imported.",
   backupFailed: "Backup failed.",
+  stats: "Stats",
+  statsTitle: "Page stats (free)",
+  statsLede: "Daily visits and approximate countries — no payment. Age and gender are not available accurately from free Google follow.",
+  statsLoadFailed: "Could not load stats.",
+  statsTodayViews: "Today's views",
+  statsTodayUnique: "Unique visitors today",
+  statsLast7: "Last 7 days",
+  statsLast30: "Last 30 days",
+  statsTotalViews: "Total views",
+  statsDailyTitle: "Daily visits",
+  statsDailyLede: "Each row: date then views / unique visitors.",
+  statsBarLegend: "Bars show relative visit volume per day.",
+  statsCountriesTitle: "Countries",
+  statsCountriesLede: "Approximate country from free host headers.",
+  statsEmpty: "No data yet. It appears after public page visits.",
+  statsLimitsTitle: "Important limits",
+  statsLimitsLede: "Age and gender are not available accurately via free Google follow. For richer free reports, add a Google Analytics Measurement ID (G-...) in settings.",
+  gaMeasurementId: "Free Google Analytics ID (optional)",
+  gaMeasurementIdHelp: "From analytics.google.com create a free property and paste the Measurement ID like G-XXXX. Leave empty to use only built-in stats.",
 };
 
 const fr: Dictionary = {

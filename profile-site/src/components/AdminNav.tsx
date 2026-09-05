@@ -14,6 +14,7 @@ export function AdminNav({
     messages: string;
     settings: string;
     followers: string;
+    stats: string;
     viewPage: string;
     notifications: string;
     markAllRead: string;
@@ -30,6 +31,7 @@ export function AdminNav({
     { href: "/admin/messages", label: labels.messages },
     { href: "/admin/settings", label: labels.settings },
     { href: "/admin/followers", label: labels.followers },
+    { href: "/admin/stats", label: labels.stats },
     { href: "/", label: labels.viewPage },
   ];
 

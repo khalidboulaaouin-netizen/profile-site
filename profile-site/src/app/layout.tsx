@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { Providers } from "@/components/Providers";
 import { readStore } from "@/lib/db";
 import { getLocaleMeta, getOgLocale } from "@/lib/i18n";
@@ -81,6 +82,7 @@ export default async function RootLayout({
   const locale = getLocaleMeta(store.settings.language);
   const themeVars = themeCssVars(store.settings);
   const colorMode = store.settings.colorMode || "system";
+  const gaId = store.settings.gaMeasurementId || "";
 
   const colorBootScript = `
 (function(){
@@ -98,6 +100,7 @@ export default async function RootLayout({
     <html lang={locale.code} dir={locale.dir} data-color-mode={colorMode === "dark" ? "dark" : "light"}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: colorBootScript }} />
+        <GoogleAnalytics measurementId={gaId} />
       </head>
       <body
         className={`${cairo.variable} ${ibm.variable} antialiased`}

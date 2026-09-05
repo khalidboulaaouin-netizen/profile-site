@@ -12,9 +12,11 @@ import type {
   Conversation,
   ChatMessage,
   OwnerNotification,
+  Analytics,
+  AnalyticsDay,
 } from "./types";
 import { normalizeDecoration, normalizeHex } from "./theme";
-import { readPersistedStoreJson, writePersistedStoreJson } from "./storage";
+import { readPersistedStoreJson, writePersistedStoreJson, blobEnabled } from "./storage";
 
 const STORY_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -63,6 +65,11 @@ const defaultStore = (): Store => ({
     showReadReceipts: false,
     publicSiteUrl: "",
     colorMode: "system",
+    gaMeasurementId: "",
+  },
+  analytics: {
+    totalViews: 0,
+    days: [],
   },
 });
 
@@ -152,6 +159,11 @@ function normalizeStore(store: Store): Store {
         store.settings?.colorMode === "light" || store.settings?.colorMode === "dark"
           ? store.settings.colorMode
           : "system",
+      gaMeasurementId: String(store.settings?.gaMeasurementId || "")
+        .trim()
+        .replace(/^.*?(G-[A-Z0-9]+).*$/i, "$1")
+        .replace(/[^G\-A-Z0-9]/gi, "")
+        .slice(0, 16),
     },
     notifications: Array.isArray(store.notifications)
       ? store.notifications
@@ -165,6 +177,42 @@ function normalizeStore(store: Store): Store {
             read: Boolean(n.read),
           }))
           .slice(0, 100)
+      : [],
+    analytics: normalizeAnalytics(store.analytics),
+  };
+}
+
+function normalizeAnalytics(input: Store["analytics"] | undefined): Analytics {
+  const days = Array.isArray(input?.days)
+    ? input!.days
+        .map((day) => normalizeAnalyticsDay(day))
+        .filter(Boolean) as AnalyticsDay[]
+    : [];
+  days.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  return {
+    totalViews: Math.max(0, Number(input?.totalViews) || 0),
+    days: days.slice(0, 90),
+  };
+}
+
+function normalizeAnalyticsDay(day: Partial<AnalyticsDay> | undefined): AnalyticsDay | null {
+  const date = String(day?.date || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const countries: Record<string, number> = {};
+  if (day?.countries && typeof day.countries === "object") {
+    for (const [code, count] of Object.entries(day.countries)) {
+      const key = String(code || "ZZ").toUpperCase().slice(0, 3);
+      const n = Math.max(0, Number(count) || 0);
+      if (n > 0) countries[key] = n;
+    }
+  }
+  return {
+    date,
+    views: Math.max(0, Number(day?.views) || 0),
+    uniqueVisitors: Math.max(0, Number(day?.uniqueVisitors) || 0),
+    countries,
+    visitorHashes: Array.isArray(day?.visitorHashes)
+      ? day!.visitorHashes.map(String).slice(0, 2000)
       : [],
   };
 }
@@ -237,6 +285,11 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
   if (clean.colorMode !== undefined) {
     clean.colorMode =
       clean.colorMode === "light" || clean.colorMode === "dark" ? clean.colorMode : "system";
+  }
+  if (clean.gaMeasurementId !== undefined) {
+    const raw = String(clean.gaMeasurementId || "").trim().toUpperCase();
+    const match = raw.match(/G-[A-Z0-9]+/);
+    clean.gaMeasurementId = match ? match[0].slice(0, 16) : "";
   }
 
   store.settings = {
@@ -793,4 +846,120 @@ export async function markOwnerNotificationsRead(ids?: string[]): Promise<OwnerN
   });
   await writeStore(store);
   return store.notifications;
+}
+
+function utcDateKey(d = new Date()): string {
+  return d.toISOString().slice(0, 10);
+}
+
+export async function recordPageVisit(input: {
+  visitorHash: string;
+  countryCode?: string;
+}): Promise<{ ok: true }> {
+  const hash = String(input.visitorHash || "")
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .slice(0, 64);
+  if (!hash) return { ok: true };
+
+  const country = String(input.countryCode || "ZZ")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3) || "ZZ";
+
+  const store = await readStore();
+  const analytics = normalizeAnalytics(store.analytics);
+  const today = utcDateKey();
+  let day = analytics.days.find((d) => d.date === today);
+  if (!day) {
+    day = {
+      date: today,
+      views: 0,
+      uniqueVisitors: 0,
+      countries: {},
+      visitorHashes: [],
+    };
+    analytics.days = [day, ...analytics.days].slice(0, 90);
+  }
+
+  day.views += 1;
+  analytics.totalViews += 1;
+  day.countries[country] = (day.countries[country] || 0) + 1;
+
+  if (!day.visitorHashes.includes(hash)) {
+    if (day.visitorHashes.length < 2000) {
+      day.visitorHashes.push(hash);
+    }
+    day.uniqueVisitors = day.visitorHashes.length;
+  }
+
+  store.analytics = {
+    totalViews: analytics.totalViews,
+    days: analytics.days.map((d) =>
+      d.date === today
+        ? {
+            date: d.date,
+            views: d.views,
+            uniqueVisitors: d.uniqueVisitors,
+            countries: d.countries,
+            visitorHashes: d.visitorHashes,
+          }
+        : d,
+    ),
+  };
+  await writeStore(store);
+  return { ok: true };
+}
+
+export type AnalyticsSummary = {
+  totalViews: number;
+  todayViews: number;
+  todayUnique: number;
+  last7Views: number;
+  last7Unique: number;
+  last30Views: number;
+  followers: number;
+  days: Array<{
+    date: string;
+    views: number;
+    uniqueVisitors: number;
+    countries: Record<string, number>;
+  }>;
+  countries: Array<{ code: string; views: number }>;
+};
+
+export async function getAnalyticsSummary(days = 30): Promise<AnalyticsSummary> {
+  const store = await readStore();
+  const analytics = normalizeAnalytics(store.analytics);
+  const limit = Math.max(1, Math.min(90, days));
+  const slice = analytics.days.slice(0, limit);
+  const today = utcDateKey();
+  const todayRow = analytics.days.find((d) => d.date === today);
+  const last7 = analytics.days.slice(0, 7);
+  const countryMap: Record<string, number> = {};
+  for (const day of slice) {
+    for (const [code, count] of Object.entries(day.countries || {})) {
+      countryMap[code] = (countryMap[code] || 0) + count;
+    }
+  }
+  const countries = Object.entries(countryMap)
+    .map(([code, views]) => ({ code, views }))
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 40);
+
+  return {
+    totalViews: analytics.totalViews,
+    todayViews: todayRow?.views || 0,
+    todayUnique: todayRow?.uniqueVisitors || 0,
+    last7Views: last7.reduce((s, d) => s + d.views, 0),
+    last7Unique: last7.reduce((s, d) => s + d.uniqueVisitors, 0),
+    last30Views: slice.reduce((s, d) => s + d.views, 0),
+    followers: store.followers.length,
+    days: slice.map(({ date, views, uniqueVisitors, countries: c }) => ({
+      date,
+      views,
+      uniqueVisitors,
+      countries: c,
+    })),
+    countries,
+  };
 }

@@ -115,6 +115,7 @@ export default function AdminSettingsPage() {
           messages: t.messages,
           settings: t.settings,
           followers: t.followers,
+          stats: t.stats,
           viewPage: t.viewPage,
           notifications: t.notifications,
           markAllRead: t.markAllRead,
@@ -327,6 +328,18 @@ export default function AdminSettingsPage() {
           </label>
           <p className="lede" style={{ marginTop: "-0.35rem" }}>
             {t.publicSiteUrlHelp}
+          </p>
+          <label>
+            {t.gaMeasurementId}
+            <input
+              value={settings.gaMeasurementId || ""}
+              onChange={(e) => setSettings({ ...settings, gaMeasurementId: e.target.value })}
+              placeholder="G-XXXXXXXXXX"
+              dir="ltr"
+            />
+          </label>
+          <p className="lede" style={{ marginTop: "-0.35rem" }}>
+            {t.gaMeasurementIdHelp}
           </p>
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <input

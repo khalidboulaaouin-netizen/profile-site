@@ -52,6 +52,8 @@ export async function PATCH(request: Request) {
       body.colorMode === "light" || body.colorMode === "dark" || body.colorMode === "system"
         ? body.colorMode
         : undefined,
+    gaMeasurementId:
+      body.gaMeasurementId !== undefined ? String(body.gaMeasurementId).trim() : undefined,
   });
 
   return NextResponse.json({ settings });

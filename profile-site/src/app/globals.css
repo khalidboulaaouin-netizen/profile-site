@@ -625,9 +625,68 @@ textarea {
   transition: transform 0.45s ease;
 }
 
+.post-tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+  background: #111;
+}
+
 .post-tile:hover img,
-.post-tile:focus-visible img {
+.post-tile:focus-visible img,
+.post-tile:hover video,
+.post-tile:focus-visible video {
   transform: scale(1.05);
+}
+
+.reel-mark {
+  position: absolute;
+  top: 0.45rem;
+  inset-inline-end: 0.45rem;
+  z-index: 2;
+  width: 1.55rem;
+  height: 1.55rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 23, 28, 0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
+.reel-badge {
+  display: inline-block;
+  margin-inline-end: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(13, 110, 110, 0.12);
+  color: var(--accent-deep, #0a5555);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.modal-sheet.modal-reel {
+  grid-template-columns: 0.9fr 1fr;
+}
+
+.reel-player {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  max-height: 80vh;
+  object-fit: contain;
+  background: #0b1216;
+}
+
+.admin-item video {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #111;
 }
 
 .post-veil {

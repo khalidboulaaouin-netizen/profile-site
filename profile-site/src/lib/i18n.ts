@@ -48,6 +48,10 @@ export type Dictionary = {
   publish: string;
   publishing: string;
   chooseImage: string;
+  chooseMedia: string;
+  mediaFile: string;
+  mediaHelp: string;
+  reelBadge: string;
   currentPosts: string;
   noPostsYet: string;
   delete: string;
@@ -200,12 +204,16 @@ const ar: Dictionary = {
   dashboardLede: "أنت الوحيد الذي يملك صلاحية النشر والتعديل هنا.",
   signOut: "تسجيل الخروج",
   publishPost: "نشر محتوى جديد",
-  publishLede: "أضف صوراً مع وصف كما في إنستغرام. تظهر فوراً في صفحتك العامة.",
+  publishLede: "أضف صوراً أو فيديوهات ريلز مع وصف. تظهر فوراً في صفحتك العامة.",
   image: "الصورة",
   caption: "الوصف",
   publish: "نشر",
   publishing: "جارٍ النشر...",
   chooseImage: "اختر صورة للمنشور",
+  chooseMedia: "اختر صورة أو فيديو",
+  mediaFile: "صورة أو فيديو (ريلز)",
+  mediaHelp: "الصور حتى 8MB. الفيديو (mp4/webm/mov) حتى 80MB — مثالي للريلز القصيرة.",
+  reelBadge: "ريلز",
   currentPosts: "المنشورات الحالية",
   noPostsYet: "لا منشورات بعد.",
   delete: "حذف",
@@ -360,12 +368,16 @@ const en: Dictionary = {
   dashboardLede: "You are the only one who can publish and edit here.",
   signOut: "Sign out",
   publishPost: "Publish new content",
-  publishLede: "Add photos with captions like Instagram. They appear instantly on your public page.",
+  publishLede: "Add photos or reel videos with captions. They appear instantly on your public page.",
   image: "Image",
   caption: "Caption",
   publish: "Publish",
   publishing: "Publishing...",
   chooseImage: "Choose an image for the post",
+  chooseMedia: "Choose a photo or video",
+  mediaFile: "Photo or reel video",
+  mediaHelp: "Images up to 8MB. Video (mp4/webm/mov) up to 80MB — best for short reels.",
+  reelBadge: "Reel",
   currentPosts: "Current posts",
   noPostsYet: "No posts yet.",
   delete: "Delete",

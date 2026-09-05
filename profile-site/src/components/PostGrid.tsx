@@ -42,6 +42,7 @@ export function PostGrid({
     | "loading"
     | "delete"
     | "deleteCommentConfirm"
+    | "reelBadge"
   >;
   locale?: string;
   enableLikes?: boolean;
@@ -157,13 +158,28 @@ export function PostGrid({
           <button
             key={post.id}
             type="button"
-            className="post-tile"
+            className={`post-tile ${post.mediaType === "video" ? "is-reel" : ""}`}
             style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
             onClick={() => setActiveId(post.id)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.imageUrl} alt={post.caption || labels.postAlt} />
+            {post.mediaType === "video" ? (
+              <video
+                src={post.imageUrl}
+                muted
+                playsInline
+                preload="metadata"
+                aria-label={post.caption || labels.postAlt}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.imageUrl} alt={post.caption || labels.postAlt} />
+            )}
             <span className="post-veil" />
+            {post.mediaType === "video" && (
+              <span className="reel-mark" aria-hidden>
+                ▶
+              </span>
+            )}
             {(enableLikes || enableComments) && (
               <span className="post-meta">
                 {enableLikes && <span>♥ {post.likes || 0}</span>}
@@ -177,14 +193,28 @@ export function PostGrid({
       {active && (
         <div className="modal-backdrop" onClick={() => setActiveId(null)} role="presentation">
           <article
-            className="modal-sheet"
+            className={`modal-sheet ${active.mediaType === "video" ? "modal-reel" : ""}`}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={active.imageUrl} alt={active.caption || labels.postAlt} />
+            {active.mediaType === "video" ? (
+              <video
+                className="reel-player"
+                src={active.imageUrl}
+                controls
+                playsInline
+                autoPlay
+                preload="metadata"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={active.imageUrl} alt={active.caption || labels.postAlt} />
+            )}
             <div className="modal-body">
+              {active.mediaType === "video" && (
+                <span className="reel-badge">{labels.reelBadge}</span>
+              )}
               <p>{active.caption || labels.noCaption}</p>
               <time dateTime={active.createdAt}>
                 {new Date(active.createdAt).toLocaleDateString(locale, {

@@ -14,12 +14,13 @@ export async function POST(request: Request) {
   const body = await request.json();
   const imageUrl = String(body.imageUrl || "").trim();
   const caption = String(body.caption || "").trim();
+  const mediaType = body.mediaType === "video" ? "video" : "image";
 
   if (!imageUrl) {
-    return NextResponse.json({ error: "الصورة مطلوبة" }, { status: 400 });
+    return NextResponse.json({ error: "الوسائط مطلوبة" }, { status: 400 });
   }
 
-  const post = await addPost({ imageUrl, caption });
+  const post = await addPost({ imageUrl, caption, mediaType });
   return NextResponse.json({ post }, { status: 201 });
 }
 

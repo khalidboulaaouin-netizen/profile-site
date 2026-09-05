@@ -64,6 +64,7 @@ const defaultStore = (): Store => ({
 function normalizePost(post: Post): Post {
   return {
     ...post,
+    mediaType: post.mediaType === "video" ? "video" : "image",
     likes: post.likes ?? 0,
     likedBy: Array.isArray(post.likedBy) ? post.likedBy : [],
     comments: Array.isArray(post.comments) ? post.comments : [],
@@ -181,11 +182,13 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
 export async function addPost(input: {
   imageUrl: string;
   caption: string;
+  mediaType?: "image" | "video";
 }): Promise<Post> {
   const store = await readStore();
   const post: Post = {
     id: randomUUID(),
     imageUrl: input.imageUrl,
+    mediaType: input.mediaType === "video" ? "video" : "image",
     caption: input.caption,
     createdAt: new Date().toISOString(),
     likes: 0,

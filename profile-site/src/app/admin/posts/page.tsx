@@ -5,13 +5,18 @@ import { FormEvent, useEffect, useState } from "react";
 import type { Post } from "@/lib/types";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
-async function uploadFile(file: File): Promise<string> {
+async function uploadFile(
+  file: File,
+): Promise<{ url: string; mediaType: "image" | "video" }> {
   const body = new FormData();
   body.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Upload failed");
-  return data.url as string;
+  return {
+    url: data.url as string,
+    mediaType: data.mediaType === "video" ? "video" : "image",
+  };
 }
 
 export default function AdminPostsPage() {
@@ -43,17 +48,21 @@ export default function AdminPostsPage() {
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     if (!file) {
-      setError(t.chooseImage);
+      setError(t.chooseMedia);
       return;
     }
     setBusy(true);
     setError("");
     try {
-      const imageUrl = await uploadFile(file);
+      const uploaded = await uploadFile(file);
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl, caption }),
+        body: JSON.stringify({
+          imageUrl: uploaded.url,
+          mediaType: uploaded.mediaType,
+          caption,
+        }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -95,14 +104,17 @@ export default function AdminPostsPage() {
 
         <form className="form-stack" onSubmit={onCreate}>
           <label>
-            {t.image}
+            {t.mediaFile}
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               required
             />
           </label>
+          <p className="lede" style={{ marginTop: "-0.35rem" }}>
+            {t.mediaHelp}
+          </p>
           <label>
             {t.caption}
             <textarea value={caption} onChange={(e) => setCaption(e.target.value)} />
@@ -119,10 +131,19 @@ export default function AdminPostsPage() {
         <div className="admin-list">
           {posts.map((post) => (
             <div key={post.id} className="admin-item">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={post.imageUrl} alt="" />
+              {post.mediaType === "video" ? (
+                <video src={post.imageUrl} muted playsInline preload="metadata" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={post.imageUrl} alt="" />
+              )}
               <div>
-                <p style={{ margin: 0 }}>{post.caption || t.noCaption}</p>
+                <p style={{ margin: 0 }}>
+                  {post.mediaType === "video" && (
+                    <span className="reel-badge">{t.reelBadge}</span>
+                  )}{" "}
+                  {post.caption || t.noCaption}
+                </p>
                 <small style={{ color: "var(--muted)" }}>
                   {new Date(post.createdAt).toLocaleString(locale)}
                 </small>

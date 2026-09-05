@@ -18,7 +18,10 @@ export type Comment = {
 
 export type Post = {
   id: string;
+  /** Media URL (image or video under /uploads) */
   imageUrl: string;
+  /** image = photo post, video = reel-style clip */
+  mediaType: "image" | "video";
   caption: string;
   createdAt: string;
   likes: number;

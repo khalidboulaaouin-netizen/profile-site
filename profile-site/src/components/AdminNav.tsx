@@ -15,6 +15,7 @@ export function AdminNav({
     settings: string;
     followers: string;
     stats: string;
+    community: string;
     viewPage: string;
     notifications: string;
     markAllRead: string;
@@ -32,6 +33,7 @@ export function AdminNav({
     { href: "/admin/settings", label: labels.settings },
     { href: "/admin/followers", label: labels.followers },
     { href: "/admin/stats", label: labels.stats },
+    { href: "/admin/community", label: labels.community },
     { href: "/", label: labels.viewPage },
   ];
 

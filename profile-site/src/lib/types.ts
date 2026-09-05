@@ -154,6 +154,10 @@ export type SiteSettings = {
   adsenseClientId: string;
   /** Optional AdSense ad unit slot ID (digits only). */
   adsenseSlotId: string;
+  /** Show public guestbook wall */
+  enableGuestbook: boolean;
+  /** Show question of the day */
+  enableDailyQuestion: boolean;
 };
 
 export type AnalyticsDay = {
@@ -174,12 +178,42 @@ export type Analytics = {
 
 export type OwnerNotification = {
   id: string;
-  type: "follow" | "message";
+  type: "follow" | "message" | "guestbook" | "answer";
   title: string;
   body: string;
   href?: string;
   createdAt: string;
   read: boolean;
+};
+
+
+export type GuestbookEntry = {
+  id: string;
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  text: string;
+  createdAt: string;
+  hidden: boolean;
+};
+
+export type QuestionAnswer = {
+  id: string;
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  text: string;
+  createdAt: string;
+  hidden: boolean;
+};
+
+export type DailyQuestion = {
+  text: string;
+  updatedAt: string;
+  active: boolean;
+  answers: QuestionAnswer[];
 };
 
 export type Store = {
@@ -193,4 +227,6 @@ export type Store = {
   settings: SiteSettings;
   notifications: OwnerNotification[];
   analytics: Analytics;
+  guestbook: GuestbookEntry[];
+  dailyQuestion: DailyQuestion;
 };

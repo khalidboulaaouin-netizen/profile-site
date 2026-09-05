@@ -254,6 +254,34 @@ export type Dictionary = {
   installAppSteps: string;
   installAppDismiss: string;
   installAppOpenLogin: string;
+  community: string;
+  communityLede: string;
+  guestbookTitle: string;
+  guestbookLede: string;
+  guestbookPlaceholder: string;
+  guestbookSubmit: string;
+  guestbookLogin: string;
+  guestbookEmpty: string;
+  guestbookDisabled: string;
+  questionTitle: string;
+  questionLede: string;
+  questionPlaceholder: string;
+  questionSubmit: string;
+  questionLogin: string;
+  questionEmpty: string;
+  questionInactive: string;
+  questionAdminLabel: string;
+  questionActiveLabel: string;
+  saveQuestion: string;
+  questionSaved: string;
+  questionReset: string;
+  questionResetConfirm: string;
+  questionAnswers: string;
+  qrTitle: string;
+  qrLede: string;
+  qrDownload: string;
+  qrOpen: string;
+  qrCopy: string;
 };
 
 const ar: Dictionary = {
@@ -503,6 +531,34 @@ const ar: Dictionary = {
   installAppSteps: "في Safari: زر المشاركة □↑ ثم «إضافة إلى الشاشة الرئيسية». بعد الفتح سجّل دخول المالك مرة واحدة.",
   installAppDismiss: "لاحقاً",
   installAppOpenLogin: "دخول المالك",
+  community: "المجتمع",
+  communityLede: "جدار الزوار، سؤال اليوم، وبطاقة QR لمشاركة صفحتك.",
+  guestbookTitle: "جدار الزوار",
+  guestbookLede: "اكتب جملة قصيرة بالدارجة أو العربية — بعد تسجيل Google.",
+  guestbookPlaceholder: "مرورك زوين… الله يعطيك الصحة",
+  guestbookSubmit: "انشر على الجدار",
+  guestbookLogin: "سجّل بـ Google واكتب",
+  guestbookEmpty: "ما كاين حتى رسالة بعد. كن أول واحد.",
+  guestbookDisabled: "جدار الزوار غير متاح حالياً.",
+  questionTitle: "سؤال اليوم",
+  questionLede: "جاوب بصراحة — الجواب يظهر للجميع بعد تسجيل Google.",
+  questionPlaceholder: "جاوب هنا بالدارجة أو العربية…",
+  questionSubmit: "أرسل الجواب",
+  questionLogin: "سجّل بـ Google وجاوب",
+  questionEmpty: "ما كاين حتى جواب بعد.",
+  questionInactive: "السؤال متوقف مؤقتاً.",
+  questionAdminLabel: "نص سؤال اليوم",
+  questionActiveLabel: "تفعيل استقبال الأجوبة",
+  saveQuestion: "حفظ السؤال",
+  questionSaved: "تم حفظ السؤال.",
+  questionReset: "مسح الأجوبة",
+  questionResetConfirm: "تمسح كل أجوبة هذا السؤال؟",
+  questionAnswers: "أجوبة الزوار",
+  qrTitle: "بطاقة QR",
+  qrLede: "امسح الكود أو نزّله وشاركه — يفتح صفحتك مباشرة.",
+  qrDownload: "تحميل QR",
+  qrOpen: "فتح الصفحة",
+  qrCopy: "نسخ الرابط",
 };
 
 const en: Dictionary = {
@@ -752,6 +808,34 @@ const en: Dictionary = {
   installAppSteps: "In Safari: Share □↑ then Add to Home Screen. After opening, sign in as owner once.",
   installAppDismiss: "Later",
   installAppOpenLogin: "Owner login",
+  community: "Community",
+  communityLede: "Guestbook, question of the day, and a QR card to share your page.",
+  guestbookTitle: "Guestbook wall",
+  guestbookLede: "Leave a short note after signing in with Google.",
+  guestbookPlaceholder: "Nice to meet you…",
+  guestbookSubmit: "Post to wall",
+  guestbookLogin: "Sign in with Google to write",
+  guestbookEmpty: "No notes yet. Be the first.",
+  guestbookDisabled: "Guestbook is unavailable right now.",
+  questionTitle: "Question of the day",
+  questionLede: "Answer honestly — replies appear publicly after Google sign-in.",
+  questionPlaceholder: "Write your answer…",
+  questionSubmit: "Send answer",
+  questionLogin: "Sign in with Google to answer",
+  questionEmpty: "No answers yet.",
+  questionInactive: "The question is paused.",
+  questionAdminLabel: "Today's question text",
+  questionActiveLabel: "Accept answers",
+  saveQuestion: "Save question",
+  questionSaved: "Question saved.",
+  questionReset: "Clear answers",
+  questionResetConfirm: "Clear all answers for this question?",
+  questionAnswers: "Visitor answers",
+  qrTitle: "QR card",
+  qrLede: "Scan or download the code — it opens your page instantly.",
+  qrDownload: "Download QR",
+  qrOpen: "Open page",
+  qrCopy: "Copy link",
 };
 
 const fr: Dictionary = {
@@ -828,6 +912,35 @@ const fr: Dictionary = {
   saveFailed: "Échec de l’enregistrement.",
   loadingSettings: "Chargement des paramètres...",
   uploadFailed: "Échec du téléversement",
+  community: "Community",
+  communityLede: "Guestbook, question of the day, and a QR card to share your page.",
+  guestbookTitle: "Guestbook wall",
+  guestbookLede: "Leave a short note after signing in with Google.",
+  guestbookPlaceholder: "Nice to meet you…",
+  guestbookSubmit: "Post to wall",
+  guestbookLogin: "Sign in with Google to write",
+  guestbookEmpty: "No notes yet. Be the first.",
+  guestbookDisabled: "Guestbook is unavailable right now.",
+  questionTitle: "Question of the day",
+  questionLede: "Answer honestly — replies appear publicly after Google sign-in.",
+  questionPlaceholder: "Write your answer…",
+  questionSubmit: "Send answer",
+  questionLogin: "Sign in with Google to answer",
+  questionEmpty: "No answers yet.",
+  questionInactive: "The question is paused.",
+  questionAdminLabel: "Today's question text",
+  questionActiveLabel: "Accept answers",
+  saveQuestion: "Save question",
+  questionSaved: "Question saved.",
+  questionReset: "Clear answers",
+  questionResetConfirm: "Clear all answers for this question?",
+  questionAnswers: "Visitor answers",
+  qrTitle: "QR card",
+  qrLede: "Scan or download the code — it opens your page instantly.",
+  qrDownload: "Download QR",
+  qrOpen: "Open page",
+  qrCopy: "Copy link",
+
 };
 
 const es: Dictionary = {
@@ -903,6 +1016,35 @@ const es: Dictionary = {
   saveFailed: "No se pudo guardar.",
   loadingSettings: "Cargando ajustes...",
   uploadFailed: "Error al subir",
+  community: "Community",
+  communityLede: "Guestbook, question of the day, and a QR card to share your page.",
+  guestbookTitle: "Guestbook wall",
+  guestbookLede: "Leave a short note after signing in with Google.",
+  guestbookPlaceholder: "Nice to meet you…",
+  guestbookSubmit: "Post to wall",
+  guestbookLogin: "Sign in with Google to write",
+  guestbookEmpty: "No notes yet. Be the first.",
+  guestbookDisabled: "Guestbook is unavailable right now.",
+  questionTitle: "Question of the day",
+  questionLede: "Answer honestly — replies appear publicly after Google sign-in.",
+  questionPlaceholder: "Write your answer…",
+  questionSubmit: "Send answer",
+  questionLogin: "Sign in with Google to answer",
+  questionEmpty: "No answers yet.",
+  questionInactive: "The question is paused.",
+  questionAdminLabel: "Today's question text",
+  questionActiveLabel: "Accept answers",
+  saveQuestion: "Save question",
+  questionSaved: "Question saved.",
+  questionReset: "Clear answers",
+  questionResetConfirm: "Clear all answers for this question?",
+  questionAnswers: "Visitor answers",
+  qrTitle: "QR card",
+  qrLede: "Scan or download the code — it opens your page instantly.",
+  qrDownload: "Download QR",
+  qrOpen: "Open page",
+  qrCopy: "Copy link",
+
 };
 
 const de: Dictionary = {
@@ -978,6 +1120,35 @@ const de: Dictionary = {
   saveFailed: "Speichern fehlgeschlagen.",
   loadingSettings: "Einstellungen werden geladen...",
   uploadFailed: "Upload fehlgeschlagen",
+  community: "Community",
+  communityLede: "Guestbook, question of the day, and a QR card to share your page.",
+  guestbookTitle: "Guestbook wall",
+  guestbookLede: "Leave a short note after signing in with Google.",
+  guestbookPlaceholder: "Nice to meet you…",
+  guestbookSubmit: "Post to wall",
+  guestbookLogin: "Sign in with Google to write",
+  guestbookEmpty: "No notes yet. Be the first.",
+  guestbookDisabled: "Guestbook is unavailable right now.",
+  questionTitle: "Question of the day",
+  questionLede: "Answer honestly — replies appear publicly after Google sign-in.",
+  questionPlaceholder: "Write your answer…",
+  questionSubmit: "Send answer",
+  questionLogin: "Sign in with Google to answer",
+  questionEmpty: "No answers yet.",
+  questionInactive: "The question is paused.",
+  questionAdminLabel: "Today's question text",
+  questionActiveLabel: "Accept answers",
+  saveQuestion: "Save question",
+  questionSaved: "Question saved.",
+  questionReset: "Clear answers",
+  questionResetConfirm: "Clear all answers for this question?",
+  questionAnswers: "Visitor answers",
+  qrTitle: "QR card",
+  qrLede: "Scan or download the code — it opens your page instantly.",
+  qrDownload: "Download QR",
+  qrOpen: "Open page",
+  qrCopy: "Copy link",
+
 };
 
 const tr: Dictionary = {
@@ -1053,6 +1224,35 @@ const tr: Dictionary = {
   saveFailed: "Kaydedilemedi.",
   loadingSettings: "Ayarlar yükleniyor...",
   uploadFailed: "Yükleme başarısız",
+  community: "Community",
+  communityLede: "Guestbook, question of the day, and a QR card to share your page.",
+  guestbookTitle: "Guestbook wall",
+  guestbookLede: "Leave a short note after signing in with Google.",
+  guestbookPlaceholder: "Nice to meet you…",
+  guestbookSubmit: "Post to wall",
+  guestbookLogin: "Sign in with Google to write",
+  guestbookEmpty: "No notes yet. Be the first.",
+  guestbookDisabled: "Guestbook is unavailable right now.",
+  questionTitle: "Question of the day",
+  questionLede: "Answer honestly — replies appear publicly after Google sign-in.",
+  questionPlaceholder: "Write your answer…",
+  questionSubmit: "Send answer",
+  questionLogin: "Sign in with Google to answer",
+  questionEmpty: "No answers yet.",
+  questionInactive: "The question is paused.",
+  questionAdminLabel: "Today's question text",
+  questionActiveLabel: "Accept answers",
+  saveQuestion: "Save question",
+  questionSaved: "Question saved.",
+  questionReset: "Clear answers",
+  questionResetConfirm: "Clear all answers for this question?",
+  questionAnswers: "Visitor answers",
+  qrTitle: "QR card",
+  qrLede: "Scan or download the code — it opens your page instantly.",
+  qrDownload: "Download QR",
+  qrOpen: "Open page",
+  qrCopy: "Copy link",
+
 };
 
 const dictionaries: Record<LocaleCode, Dictionary> = {

@@ -14,6 +14,9 @@ import type {
   OwnerNotification,
   Analytics,
   AnalyticsDay,
+  GuestbookEntry,
+  DailyQuestion,
+  QuestionAnswer,
 } from "./types";
 import { normalizeDecoration, normalizeHex } from "./theme";
 import { readPersistedStoreJson, writePersistedStoreJson, blobEnabled } from "./storage";
@@ -68,6 +71,15 @@ const defaultStore = (): Store => ({
     gaMeasurementId: "",
     adsenseClientId: "",
     adsenseSlotId: "",
+    enableGuestbook: true,
+    enableDailyQuestion: true,
+  },
+  guestbook: [],
+  dailyQuestion: {
+    text: "شنو أجمل لحظة عشتها هاد الأسبوع؟",
+    updatedAt: new Date().toISOString(),
+    active: true,
+    answers: [],
   },
   analytics: {
     totalViews: 0,
@@ -180,12 +192,14 @@ function normalizeStore(store: Store): Store {
         return m ? m[0] : "";
       })(),
       adsenseSlotId: String(store.settings?.adsenseSlotId || "").replace(/\D/g, "").slice(0, 16),
+      enableGuestbook: store.settings?.enableGuestbook !== false,
+      enableDailyQuestion: store.settings?.enableDailyQuestion !== false,
     },
     notifications: Array.isArray(store.notifications)
       ? store.notifications
           .map((n) => ({
             id: String(n.id || randomUUID()),
-            type: (n.type === "follow" ? "follow" : "message") as "follow" | "message",
+            type: (n.type === "follow" || n.type === "guestbook" || n.type === "answer" || n.type === "message" ? n.type : "message") as OwnerNotification["type"],
             title: String(n.title || ""),
             body: String(n.body || ""),
             href: n.href ? String(n.href) : undefined,
@@ -195,6 +209,8 @@ function normalizeStore(store: Store): Store {
           .slice(0, 100)
       : [],
     analytics: normalizeAnalytics(store.analytics),
+    guestbook: normalizeGuestbook(store.guestbook),
+    dailyQuestion: normalizeDailyQuestion(store.dailyQuestion),
   };
 }
 
@@ -992,3 +1008,190 @@ export async function getAnalyticsSummary(days = 30): Promise<AnalyticsSummary> 
     countries,
   };
 }
+
+function normalizeGuestbook(entries: GuestbookEntry[] | undefined): GuestbookEntry[] {
+  if (!Array.isArray(entries)) return [];
+  return entries
+    .map((e) => ({
+      id: String(e.id || randomUUID()),
+      googleId: String(e.googleId || ""),
+      name: String(e.name || "زائر").slice(0, 80),
+      email: String(e.email || "").slice(0, 120),
+      image: String(e.image || ""),
+      text: String(e.text || "").trim().slice(0, 280),
+      createdAt: String(e.createdAt || new Date().toISOString()),
+      hidden: Boolean(e.hidden),
+    }))
+    .filter((e) => e.text && e.googleId)
+    .slice(0, 500);
+}
+
+function normalizeDailyQuestion(input: DailyQuestion | undefined): DailyQuestion {
+  const defaults = defaultStore().dailyQuestion;
+  const answers: QuestionAnswer[] = Array.isArray(input?.answers)
+    ? input!.answers
+        .map((a) => ({
+          id: String(a.id || randomUUID()),
+          googleId: String(a.googleId || ""),
+          name: String(a.name || "زائر").slice(0, 80),
+          email: String(a.email || "").slice(0, 120),
+          image: String(a.image || ""),
+          text: String(a.text || "").trim().slice(0, 280),
+          createdAt: String(a.createdAt || new Date().toISOString()),
+          hidden: Boolean(a.hidden),
+        }))
+        .filter((a) => a.text && a.googleId)
+        .slice(0, 500)
+    : [];
+  return {
+    text: String(input?.text || defaults.text).trim().slice(0, 200) || defaults.text,
+    updatedAt: String(input?.updatedAt || defaults.updatedAt),
+    active: input?.active !== false,
+    answers,
+  };
+}
+
+export async function addGuestbookEntry(input: {
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  text: string;
+}): Promise<GuestbookEntry | null> {
+  const textValue = String(input.text || "").trim().slice(0, 280);
+  if (!textValue || !input.googleId) return null;
+  const store = await readStore();
+  if (store.settings.enableGuestbook === false) return null;
+  // one visible entry per google user — update if exists
+  const entry: GuestbookEntry = {
+    id: randomUUID(),
+    googleId: input.googleId,
+    name: (input.name || "زائر").slice(0, 80),
+    email: (input.email || "").slice(0, 120),
+    image: input.image || "",
+    text: textValue,
+    createdAt: new Date().toISOString(),
+    hidden: false,
+  };
+  store.guestbook = [
+    entry,
+    ...store.guestbook.filter((e) => e.googleId !== input.googleId),
+  ].slice(0, 500);
+  store.notifications = [
+    {
+      id: randomUUID(),
+      type: "guestbook" as const,
+      title: "رسالة على جدار الزوار",
+      body: `${entry.name}: ${entry.text.slice(0, 80)}`,
+      href: "/admin/community",
+      createdAt: new Date().toISOString(),
+      read: false,
+    },
+    ...store.notifications,
+  ].slice(0, 100);
+  await writeStore(store);
+  return entry;
+}
+
+export async function setGuestbookHidden(id: string, hidden: boolean): Promise<boolean> {
+  const store = await readStore();
+  const idx = store.guestbook.findIndex((e) => e.id === id);
+  if (idx < 0) return false;
+  store.guestbook[idx] = { ...store.guestbook[idx], hidden };
+  await writeStore(store);
+  return true;
+}
+
+export async function deleteGuestbookEntry(id: string): Promise<boolean> {
+  const store = await readStore();
+  const before = store.guestbook.length;
+  store.guestbook = store.guestbook.filter((e) => e.id !== id);
+  if (store.guestbook.length === before) return false;
+  await writeStore(store);
+  return true;
+}
+
+export async function updateDailyQuestion(input: {
+  text?: string;
+  active?: boolean;
+  resetAnswers?: boolean;
+}): Promise<DailyQuestion> {
+  const store = await readStore();
+  const next = normalizeDailyQuestion(store.dailyQuestion);
+  if (input.text !== undefined) {
+    next.text = String(input.text || "").trim().slice(0, 200) || next.text;
+    next.updatedAt = new Date().toISOString();
+  }
+  if (input.active !== undefined) next.active = Boolean(input.active);
+  if (input.resetAnswers) next.answers = [];
+  store.dailyQuestion = next;
+  await writeStore(store);
+  return next;
+}
+
+export async function addQuestionAnswer(input: {
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  text: string;
+}): Promise<QuestionAnswer | null> {
+  const textValue = String(input.text || "").trim().slice(0, 280);
+  if (!textValue || !input.googleId) return null;
+  const store = await readStore();
+  if (store.settings.enableDailyQuestion === false) return null;
+  const q = normalizeDailyQuestion(store.dailyQuestion);
+  if (!q.active || !q.text) return null;
+  const answer: QuestionAnswer = {
+    id: randomUUID(),
+    googleId: input.googleId,
+    name: (input.name || "زائر").slice(0, 80),
+    email: (input.email || "").slice(0, 120),
+    image: input.image || "",
+    text: textValue,
+    createdAt: new Date().toISOString(),
+    hidden: false,
+  };
+  q.answers = [
+    answer,
+    ...q.answers.filter((a) => a.googleId !== input.googleId),
+  ].slice(0, 500);
+  store.dailyQuestion = q;
+  store.notifications = [
+    {
+      id: randomUUID(),
+      type: "answer" as const,
+      title: "رد على سؤال اليوم",
+      body: `${answer.name}: ${answer.text.slice(0, 80)}`,
+      href: "/admin/community",
+      createdAt: new Date().toISOString(),
+      read: false,
+    },
+    ...store.notifications,
+  ].slice(0, 100);
+  await writeStore(store);
+  return answer;
+}
+
+export async function setQuestionAnswerHidden(id: string, hidden: boolean): Promise<boolean> {
+  const store = await readStore();
+  const q = normalizeDailyQuestion(store.dailyQuestion);
+  const idx = q.answers.findIndex((a) => a.id === id);
+  if (idx < 0) return false;
+  q.answers[idx] = { ...q.answers[idx], hidden };
+  store.dailyQuestion = q;
+  await writeStore(store);
+  return true;
+}
+
+export async function deleteQuestionAnswer(id: string): Promise<boolean> {
+  const store = await readStore();
+  const q = normalizeDailyQuestion(store.dailyQuestion);
+  const before = q.answers.length;
+  q.answers = q.answers.filter((a) => a.id !== id);
+  if (q.answers.length === before) return false;
+  store.dailyQuestion = q;
+  await writeStore(store);
+  return true;
+}
+

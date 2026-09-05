@@ -145,6 +145,7 @@ export default function AdminPostsPage() {
           settings: t.settings,
           followers: t.followers,
           stats: t.stats,
+          community: t.community,
           viewPage: t.viewPage,
           notifications: t.notifications,
           markAllRead: t.markAllRead,

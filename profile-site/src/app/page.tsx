@@ -10,6 +10,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { VisitTracker } from "@/components/VisitTracker";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { InstallAppPrompt } from "@/components/InstallAppPrompt";
+import { GuestbookWall } from "@/components/GuestbookWall";
+import { DailyQuestionBox } from "@/components/DailyQuestionBox";
+import { QrShareCard } from "@/components/QrShareCard";
 import { auth } from "@/lib/auth";
 import { isBlocked, readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
@@ -184,6 +187,47 @@ export default async function HomePage() {
         clientId={store.settings.adsenseClientId}
         slotId={store.settings.adsenseSlotId}
         format="rectangle"
+      />
+
+      
+      <DailyQuestionBox
+        labels={{
+          questionTitle: t.questionTitle,
+          questionLede: t.questionLede,
+          questionPlaceholder: t.questionPlaceholder,
+          questionSubmit: t.questionSubmit,
+          questionLogin: t.questionLogin,
+          questionEmpty: t.questionEmpty,
+          questionInactive: t.questionInactive,
+          loading: t.loading,
+        }}
+        locale={locale}
+      />
+
+      <GuestbookWall
+        labels={{
+          guestbookTitle: t.guestbookTitle,
+          guestbookLede: t.guestbookLede,
+          guestbookPlaceholder: t.guestbookPlaceholder,
+          guestbookSubmit: t.guestbookSubmit,
+          guestbookLogin: t.guestbookLogin,
+          guestbookEmpty: t.guestbookEmpty,
+          loading: t.loading,
+          guestbookDisabled: t.guestbookDisabled,
+        }}
+        locale={locale}
+      />
+
+      <QrShareCard
+        url={siteUrl}
+        labels={{
+          qrTitle: t.qrTitle,
+          qrLede: t.qrLede,
+          qrDownload: t.qrDownload,
+          qrOpen: t.qrOpen,
+          linkCopied: t.linkCopied,
+          qrCopy: t.qrCopy,
+        }}
       />
 
       <p className="footer-note">{t.footerNote}</p>

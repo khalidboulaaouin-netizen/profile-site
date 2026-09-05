@@ -465,15 +465,25 @@ export async function getConversationByGoogleId(
   return (store.conversations || []).find((c) => c.googleId === googleId) || null;
 }
 
+function normalizeMessageContent(input: { text?: string; audioUrl?: string }) {
+  const text = String(input.text || "").trim().slice(0, 1000);
+  const audioUrl = String(input.audioUrl || "").trim();
+  const safeAudio =
+    audioUrl.startsWith("/uploads/") && !audioUrl.includes("..") ? audioUrl : "";
+  if (!text && !safeAudio) return null;
+  return { text, audioUrl: safeAudio || undefined };
+}
+
 export async function sendFollowerMessage(input: {
   googleId: string;
   name: string;
   email: string;
   image: string;
-  text: string;
+  text?: string;
+  audioUrl?: string;
 }): Promise<Conversation | null> {
-  const text = input.text.trim().slice(0, 1000);
-  if (!input.googleId || !text) return null;
+  const content = normalizeMessageContent(input);
+  if (!input.googleId || !content) return null;
   if (await isBlocked(input.googleId)) return null;
 
   const store = await readStore();
@@ -481,7 +491,8 @@ export async function sendFollowerMessage(input: {
   const message: ChatMessage = {
     id: randomUUID(),
     from: "follower",
-    text,
+    text: content.text,
+    audioUrl: content.audioUrl,
     createdAt: now,
     readByOwner: false,
     readByFollower: true,
@@ -516,10 +527,11 @@ export async function sendFollowerMessage(input: {
 
 export async function sendOwnerReply(input: {
   googleId: string;
-  text: string;
+  text?: string;
+  audioUrl?: string;
 }): Promise<Conversation | null> {
-  const text = input.text.trim().slice(0, 1000);
-  if (!input.googleId || !text) return null;
+  const content = normalizeMessageContent(input);
+  if (!input.googleId || !content) return null;
 
   const store = await readStore();
   const idx = (store.conversations || []).findIndex((c) => c.googleId === input.googleId);
@@ -529,7 +541,8 @@ export async function sendOwnerReply(input: {
   const message: ChatMessage = {
     id: randomUUID(),
     from: "owner",
-    text,
+    text: content.text,
+    audioUrl: content.audioUrl,
     createdAt: now,
     readByOwner: true,
     readByFollower: false,

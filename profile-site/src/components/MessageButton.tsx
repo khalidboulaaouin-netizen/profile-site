@@ -4,12 +4,23 @@ import { FormEvent, useEffect, useState, useTransition } from "react";
 import { signIn, useSession } from "next-auth/react";
 import type { Dictionary } from "@/lib/i18n";
 import type { ChatMessage, Conversation } from "@/lib/types";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 function lastFollowerMessageId(messages: ChatMessage[]): string | null {
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     if (messages[i].from === "follower") return messages[i].id;
   }
   return null;
+}
+
+async function uploadVoice(blob: Blob): Promise<string> {
+  const form = new FormData();
+  const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+  form.append("file", blob, `voice.${ext}`);
+  const res = await fetch("/api/messages/upload", { method: "POST", body: form });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "upload failed");
+  return data.url as string;
 }
 
 export function MessageButton({
@@ -29,6 +40,13 @@ export function MessageButton({
     | "messageFailed"
     | "noMessages"
     | "messageSeen"
+    | "recordVoice"
+    | "stopRecording"
+    | "recording"
+    | "voiceUnsupported"
+    | "voicePermissionDenied"
+    | "voiceMessage"
+    | "sendingVoice"
   >;
 }) {
   const { data: session, status } = useSession();
@@ -71,15 +89,13 @@ export function MessageButton({
     }
   }, [session?.user?.role]);
 
-  function onSend(e: FormEvent) {
-    e.preventDefault();
-    if (!text.trim()) return;
+  function sendPayload(payload: { text?: string; audioUrl?: string }) {
     setError("");
     startTransition(async () => {
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -88,6 +104,34 @@ export function MessageButton({
       }
       setConversation(data.conversation as Conversation);
       setText("");
+    });
+  }
+
+  function onSend(e: FormEvent) {
+    e.preventDefault();
+    if (!text.trim()) return;
+    sendPayload({ text });
+  }
+
+  async function onVoice(blob: Blob) {
+    setError("");
+    startTransition(async () => {
+      try {
+        const audioUrl = await uploadVoice(blob);
+        const res = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioUrl }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || labels.messageFailed);
+          return;
+        }
+        setConversation(data.conversation as Conversation);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : labels.messageFailed);
+      }
     });
   }
 
@@ -122,7 +166,13 @@ export function MessageButton({
                   key={m.id}
                   className={`bubble ${m.from === "follower" ? "mine" : "theirs"}`}
                 >
-                  <p>{m.text}</p>
+                  {m.audioUrl && (
+                    <audio className="voice-player" controls preload="metadata" src={m.audioUrl}>
+                      {labels.voiceMessage}
+                    </audio>
+                  )}
+                  {m.text ? <p>{m.text}</p> : null}
+                  {!m.text && !m.audioUrl ? <p>{labels.noMessages}</p> : null}
                   <time dateTime={m.createdAt}>
                     {new Date(m.createdAt).toLocaleString()}
                   </time>
@@ -140,12 +190,20 @@ export function MessageButton({
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={labels.writeMessage}
-                required
                 maxLength={1000}
                 rows={3}
               />
+              <VoiceRecorder
+                disabled={pending}
+                labels={labels}
+                onRecorded={onVoice}
+              />
               {error && <p className="hint">{error}</p>}
-              <button className="btn btn-primary" type="submit" disabled={pending}>
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={pending || !text.trim()}
+              >
                 {pending ? labels.loading : labels.sendMessage}
               </button>
             </form>

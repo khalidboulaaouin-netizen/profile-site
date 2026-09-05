@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState, useTransition } from "react";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 import type { Conversation } from "@/lib/types";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 type ConversationSummary = {
   id: string;
@@ -15,6 +16,16 @@ type ConversationSummary = {
   preview: string;
   unread: number;
 };
+
+async function uploadVoice(blob: Blob): Promise<string> {
+  const form = new FormData();
+  const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+  form.append("file", blob, `voice.${ext}`);
+  const res = await fetch("/api/messages/upload", { method: "POST", body: form });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "upload failed");
+  return data.url as string;
+}
 
 export default function AdminMessagesPage() {
   const [t, setT] = useState<Dictionary>(() => getDictionary("ar"));
@@ -77,6 +88,30 @@ export default function AdminMessagesPage() {
     });
   }
 
+  function onVoice(blob: Blob) {
+    if (!active) return;
+    setError("");
+    startTransition(async () => {
+      try {
+        const audioUrl = await uploadVoice(blob);
+        const res = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ googleId: active.googleId, audioUrl }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || t.messageFailed);
+          return;
+        }
+        setActive(data.conversation);
+        await loadList();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t.messageFailed);
+      }
+    });
+  }
+
   return (
     <main className="admin-page">
       <nav className="admin-nav">
@@ -123,7 +158,9 @@ export default function AdminMessagesPage() {
                   </small>
                   <div>
                     <small style={{ color: "var(--muted)" }}>
-                      {item.preview || t.noMessages}
+                      {item.preview === "__voice__"
+                        ? t.voiceMessage
+                        : item.preview || t.noMessages}
                     </small>
                   </div>
                   <div>
@@ -159,7 +196,12 @@ export default function AdminMessagesPage() {
                 key={m.id}
                 className={`bubble ${m.from === "owner" ? "mine" : "theirs"}`}
               >
-                <p>{m.text}</p>
+                {m.audioUrl && (
+                  <audio className="voice-player" controls preload="metadata" src={m.audioUrl}>
+                    {t.voiceMessage}
+                  </audio>
+                )}
+                {m.text ? <p>{m.text}</p> : null}
                 <time dateTime={m.createdAt}>
                   {new Date(m.createdAt).toLocaleString(locale)}
                 </time>
@@ -172,12 +214,20 @@ export default function AdminMessagesPage() {
               value={reply}
               onChange={(e) => setReply(e.target.value)}
               placeholder={t.reply}
-              required
               maxLength={1000}
               rows={3}
             />
+            <VoiceRecorder
+              disabled={pending}
+              labels={t}
+              onRecorded={onVoice}
+            />
             {error && <p className="hint">{error}</p>}
-            <button className="btn btn-primary" type="submit" disabled={pending}>
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={pending || !reply.trim()}
+            >
               {pending ? t.loading : t.sendReply}
             </button>
           </form>

@@ -51,7 +51,13 @@ export async function GET(request: Request) {
         email: c.email,
         image: c.image,
         updatedAt: c.updatedAt,
-        preview: c.messages[c.messages.length - 1]?.text || "",
+        preview: (() => {
+          const last = c.messages[c.messages.length - 1];
+          if (!last) return "";
+          if (last.audioUrl && !last.text) return "__voice__";
+          if (last.audioUrl && last.text) return last.text;
+          return last.text || "";
+        })(),
         unread: c.messages.filter((m) => m.from === "follower" && !m.readByOwner).length,
       })),
       unread,
@@ -85,10 +91,11 @@ export async function POST(request: Request) {
   const session = await auth();
   const body = await request.json();
   const text = String(body.text || "");
+  const audioUrl = String(body.audioUrl || "");
 
   if (session?.user?.role === "admin") {
     const googleId = String(body.googleId || "");
-    const conversation = await sendOwnerReply({ googleId, text });
+    const conversation = await sendOwnerReply({ googleId, text, audioUrl });
     if (!conversation) {
       return NextResponse.json({ error: "تعذّر إرسال الرد" }, { status: 400 });
     }
@@ -112,6 +119,7 @@ export async function POST(request: Request) {
     email: session.user.email || "",
     image: session.user.image || "",
     text,
+    audioUrl,
   });
 
   if (!conversation) {

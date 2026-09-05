@@ -70,6 +70,8 @@ export type ChatMessage = {
   id: string;
   from: "follower" | "owner";
   text: string;
+  /** Optional uploaded voice note URL under /uploads */
+  audioUrl?: string;
   createdAt: string;
   readByOwner: boolean;
   readByFollower: boolean;

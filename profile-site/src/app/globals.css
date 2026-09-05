@@ -1083,6 +1083,45 @@ textarea {
   opacity: 0.9;
 }
 
+.voice-player {
+  display: block;
+  width: min(100%, 240px);
+  margin-bottom: 0.35rem;
+}
+
+.bubble.mine .voice-player {
+  filter: contrast(1.05);
+}
+
+.voice-recorder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.voice-btn.recording {
+  background: rgba(180, 40, 40, 0.12);
+  color: #9b1c1c;
+  border-color: rgba(180, 40, 40, 0.25);
+}
+
+.voice-pulse {
+  font-size: 0.85rem;
+  color: var(--muted);
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .message-compose textarea {
   width: 100%;
   border: 1px solid var(--line);

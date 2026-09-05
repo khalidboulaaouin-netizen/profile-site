@@ -161,6 +161,13 @@ export type Dictionary = {
   messageFailed: string;
   messageSeen: string;
   backToInbox: string;
+  recordVoice: string;
+  stopRecording: string;
+  recording: string;
+  voiceUnsupported: string;
+  voicePermissionDenied: string;
+  voiceMessage: string;
+  sendingVoice: string;
 };
 
 const ar: Dictionary = {
@@ -314,6 +321,13 @@ const ar: Dictionary = {
   messageFailed: "تعذّر إرسال الرسالة.",
   messageSeen: "تمت القراءة",
   backToInbox: "العودة للوارد",
+  recordVoice: "تسجيل صوت",
+  stopRecording: "إيقاف وإرسال",
+  recording: "جارٍ التسجيل...",
+  voiceUnsupported: "المتصفح لا يدعم التسجيل الصوتي.",
+  voicePermissionDenied: "يلزم السماح بالمايكروفون لإرسال صوت.",
+  voiceMessage: "رسالة صوتية",
+  sendingVoice: "جارٍ إرسال الصوت...",
 };
 
 const en: Dictionary = {
@@ -467,6 +481,13 @@ const en: Dictionary = {
   messageFailed: "Could not send the message.",
   messageSeen: "Seen",
   backToInbox: "Back to inbox",
+  recordVoice: "Record voice",
+  stopRecording: "Stop & send",
+  recording: "Recording...",
+  voiceUnsupported: "This browser does not support voice recording.",
+  voicePermissionDenied: "Microphone permission is required to send voice.",
+  voiceMessage: "Voice message",
+  sendingVoice: "Sending voice...",
 };
 
 const fr: Dictionary = {

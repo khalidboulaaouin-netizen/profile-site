@@ -65,6 +65,14 @@ export type Dictionary = {
   bio: string;
   location: string;
   website: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  tiktokUrl: string;
+  socialLinksHelp: string;
+  followOnSocial: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
   avatar: string;
   cover: string;
   saveProfile: string;
@@ -238,6 +246,15 @@ const ar: Dictionary = {
   bio: "النبذة",
   location: "الموقع",
   website: "الموقع الإلكتروني",
+  instagramUrl: "رابط إنستغرام",
+  facebookUrl: "رابط فيسبوك",
+  tiktokUrl: "رابط تيك توك",
+  socialLinksHelp:
+    "أضف روابط حساباتك ليتمكن الزوار من متابعتك هناك حتى بدون Google. متابعة الموقع والرسائل والستوري تبقى عبر Google.",
+  followOnSocial: "تابعني على",
+  instagram: "إنستغرام",
+  facebook: "فيسبوك",
+  tiktok: "تيك توك",
   avatar: "صورة الملف",
   cover: "صورة الغلاف",
   saveProfile: "حفظ الملف الشخصي",
@@ -415,6 +432,15 @@ const en: Dictionary = {
   bio: "Bio",
   location: "Location",
   website: "Website",
+  instagramUrl: "Instagram URL",
+  facebookUrl: "Facebook URL",
+  tiktokUrl: "TikTok URL",
+  socialLinksHelp:
+    "Add your social profile links so visitors can follow you there without Google. Site follow, messages, and stories still use Google.",
+  followOnSocial: "Follow me on",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  tiktok: "TikTok",
   avatar: "Profile photo",
   cover: "Cover photo",
   saveProfile: "Save profile",

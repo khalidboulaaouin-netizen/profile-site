@@ -66,6 +66,10 @@ export default async function HomePage() {
           following: t.following,
           highlights: t.highlights,
           verifiedLabel: t.verifiedLabel,
+          followOnSocial: t.followOnSocial,
+          instagram: t.instagram,
+          facebook: t.facebook,
+          tiktok: t.tiktok,
         }}
         followSlot={
           <div className="profile-actions">

@@ -166,6 +166,34 @@ export default function AdminSettingsPage() {
               dir="ltr"
             />
           </label>
+          <p className="lede">{t.socialLinksHelp}</p>
+          <label>
+            {t.instagramUrl}
+            <input
+              value={profile.instagramUrl || ""}
+              onChange={(e) => setProfile({ ...profile, instagramUrl: e.target.value })}
+              placeholder="https://instagram.com/..."
+              dir="ltr"
+            />
+          </label>
+          <label>
+            {t.facebookUrl}
+            <input
+              value={profile.facebookUrl || ""}
+              onChange={(e) => setProfile({ ...profile, facebookUrl: e.target.value })}
+              placeholder="https://facebook.com/..."
+              dir="ltr"
+            />
+          </label>
+          <label>
+            {t.tiktokUrl}
+            <input
+              value={profile.tiktokUrl || ""}
+              onChange={(e) => setProfile({ ...profile, tiktokUrl: e.target.value })}
+              placeholder="https://tiktok.com/@..."
+              dir="ltr"
+            />
+          </label>
           <label>
             {t.avatar}
             <input

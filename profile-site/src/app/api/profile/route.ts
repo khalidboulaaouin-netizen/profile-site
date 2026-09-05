@@ -21,6 +21,9 @@ export async function PATCH(request: Request) {
     website: body.website !== undefined ? String(body.website) : undefined,
     location: body.location !== undefined ? String(body.location) : undefined,
     emailPublic: body.emailPublic !== undefined ? String(body.emailPublic) : undefined,
+    instagramUrl: body.instagramUrl !== undefined ? String(body.instagramUrl).trim() : undefined,
+    facebookUrl: body.facebookUrl !== undefined ? String(body.facebookUrl).trim() : undefined,
+    tiktokUrl: body.tiktokUrl !== undefined ? String(body.tiktokUrl).trim() : undefined,
   });
 
   return NextResponse.json({ profile });

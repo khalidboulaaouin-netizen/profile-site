@@ -7,6 +7,12 @@ export type Profile = {
   website: string;
   location: string;
   emailPublic: string;
+  /** Public Instagram profile URL */
+  instagramUrl: string;
+  /** Public Facebook profile/page URL */
+  facebookUrl: string;
+  /** Public TikTok profile URL */
+  tiktokUrl: string;
 };
 
 export type Comment = {

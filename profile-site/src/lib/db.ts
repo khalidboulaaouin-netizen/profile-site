@@ -30,6 +30,9 @@ const defaultStore = (): Store => ({
     website: "",
     location: "العالم العربي",
     emailPublic: "",
+    instagramUrl: "",
+    facebookUrl: "",
+    tiktokUrl: "",
   },
   posts: [],
   highlights: [
@@ -97,6 +100,17 @@ function normalizeHighlight(highlight: Highlight): Highlight {
   };
 }
 
+function normalizeProfile(profile: Profile): Profile {
+  const defaults = defaultStore().profile;
+  return {
+    ...defaults,
+    ...profile,
+    instagramUrl: profile.instagramUrl || "",
+    facebookUrl: profile.facebookUrl || "",
+    tiktokUrl: profile.tiktokUrl || "",
+  };
+}
+
 function isStoryActive(story: Story, now = Date.now()) {
   return new Date(story.expiresAt).getTime() > now;
 }
@@ -105,6 +119,7 @@ function normalizeStore(store: Store): Store {
   const now = Date.now();
   return {
     ...store,
+    profile: normalizeProfile(store.profile || defaultStore().profile),
     posts: (store.posts || []).map(normalizePost),
     highlights: (store.highlights || []).map(normalizeHighlight),
     stories: (store.stories || [])
@@ -166,7 +181,7 @@ export async function updateProfile(patch: Partial<Profile>): Promise<Profile> {
   const clean = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   ) as Partial<Profile>;
-  store.profile = { ...store.profile, ...clean };
+  store.profile = normalizeProfile({ ...store.profile, ...clean });
   await writeStore(store);
   return store.profile;
 }

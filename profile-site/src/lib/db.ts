@@ -920,13 +920,52 @@ export async function getConversationByGoogleId(
   return (store.conversations || []).find((c) => c.googleId === googleId) || null;
 }
 
-function normalizeMessageContent(input: { text?: string; audioUrl?: string }) {
+function isSafeUploadUrl(url: string): boolean {
+  const value = String(url || "").trim();
+  if (!value || value.includes("..")) return false;
+  if (value.startsWith("/uploads/")) return true;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:") return false;
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+    if (host.endsWith(".blob.vercel-storage.com")) return true;
+    if (path.startsWith("/uploads/")) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function inferChatMediaType(
+  url: string,
+  explicit?: "image" | "video",
+): "image" | "video" {
+  if (explicit === "video" || explicit === "image") return explicit;
+  if (/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(url)) return "video";
+  return "image";
+}
+
+function normalizeMessageContent(input: {
+  text?: string;
+  audioUrl?: string;
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
+}) {
   const text = String(input.text || "").trim().slice(0, 1000);
   const audioUrl = String(input.audioUrl || "").trim();
-  const safeAudio =
-    audioUrl.startsWith("/uploads/") && !audioUrl.includes("..") ? audioUrl : "";
-  if (!text && !safeAudio) return null;
-  return { text, audioUrl: safeAudio || undefined };
+  const mediaUrl = String(input.mediaUrl || "").trim();
+  const safeAudio = isSafeUploadUrl(audioUrl) ? audioUrl : "";
+  const safeMedia = isSafeUploadUrl(mediaUrl) ? mediaUrl : "";
+  if (!text && !safeAudio && !safeMedia) return null;
+  return {
+    text,
+    audioUrl: safeAudio || undefined,
+    mediaUrl: safeMedia || undefined,
+    mediaType: safeMedia
+      ? inferChatMediaType(safeMedia, input.mediaType)
+      : undefined,
+  };
 }
 
 export async function sendFollowerMessage(input: {
@@ -936,6 +975,8 @@ export async function sendFollowerMessage(input: {
   image: string;
   text?: string;
   audioUrl?: string;
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
 }): Promise<Conversation | null> {
   const content = normalizeMessageContent(input);
   if (!input.googleId || !content) return null;
@@ -948,6 +989,8 @@ export async function sendFollowerMessage(input: {
     from: "follower",
     text: content.text,
     audioUrl: content.audioUrl,
+    mediaUrl: content.mediaUrl,
+    mediaType: content.mediaType,
     createdAt: now,
     readByOwner: false,
     readByFollower: true,
@@ -1008,6 +1051,8 @@ export async function sendOwnerReply(input: {
   googleId: string;
   text?: string;
   audioUrl?: string;
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
 }): Promise<Conversation | null> {
   const content = normalizeMessageContent(input);
   if (!input.googleId || !content) return null;
@@ -1022,6 +1067,8 @@ export async function sendOwnerReply(input: {
     from: "owner",
     text: content.text,
     audioUrl: content.audioUrl,
+    mediaUrl: content.mediaUrl,
+    mediaType: content.mediaType,
     createdAt: now,
     readByOwner: true,
     readByFollower: false,

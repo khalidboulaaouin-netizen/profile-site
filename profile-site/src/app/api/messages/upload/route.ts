@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { isBlocked } from "@/lib/db";
 import { uploadPublicBinary } from "@/lib/storage";
 
-const ALLOWED_TYPES = new Set([
+const AUDIO_TYPES = new Set([
   "audio/webm",
   "audio/ogg",
   "audio/mpeg",
@@ -12,6 +12,22 @@ const ALLOWED_TYPES = new Set([
   "audio/wav",
   "audio/x-m4a",
   "audio/aac",
+]);
+
+const IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+]);
+
+const VIDEO_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-m4v",
 ]);
 
 const EXT_BY_TYPE: Record<string, string> = {
@@ -22,7 +38,20 @@ const EXT_BY_TYPE: Record<string, string> = {
   "audio/wav": "wav",
   "audio/x-m4a": "m4a",
   "audio/aac": "aac",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/heic": "heic",
+  "image/heif": "heif",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "video/quicktime": "mov",
+  "video/x-m4v": "m4v",
 };
+
+/** Stay under Vercel serverless body limit (~4.5MB). Larger files use blob client upload. */
+const MAX_SERVER_BYTES = 3.5 * 1024 * 1024;
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -46,18 +75,36 @@ export async function POST(request: Request) {
   }
 
   const mime = (file.type || "").split(";")[0].trim().toLowerCase();
-  if (!ALLOWED_TYPES.has(mime)) {
-    return NextResponse.json({ error: "يُسمح بالملفات الصوتية فقط" }, { status: 400 });
+  const isAudio = AUDIO_TYPES.has(mime);
+  const isImage = IMAGE_TYPES.has(mime);
+  const isVideo = VIDEO_TYPES.has(mime);
+
+  if (!isAudio && !isImage && !isVideo) {
+    return NextResponse.json(
+      { error: "يُسمح بالصوت أو الصور أو الفيديو فقط" },
+      { status: 400 },
+    );
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: "الحجم الأقصى للصوت 5MB" }, { status: 400 });
+  if (file.size > MAX_SERVER_BYTES) {
+    return NextResponse.json(
+      {
+        error:
+          "الملف كبير للرفع عبر الخادم. استخدم الرفع المباشر (صورة/فيديو أكبر).",
+        code: "too_large",
+      },
+      { status: 413 },
+    );
   }
 
-  const ext = EXT_BY_TYPE[mime] || "webm";
-  const filename = `voice-${randomUUID()}.${ext}`;
+  const kind = isAudio ? "voice" : isVideo ? "chat-video" : "chat-image";
+  const ext = EXT_BY_TYPE[mime] || (isVideo ? "mp4" : isImage ? "jpg" : "webm");
+  const filename = `${kind}-${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   const url = await uploadPublicBinary(filename, buffer, mime);
 
-  return NextResponse.json({ url });
+  return NextResponse.json({
+    url,
+    mediaType: isVideo ? "video" : isImage ? "image" : "audio",
+  });
 }

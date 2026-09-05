@@ -212,6 +212,11 @@ export type Dictionary = {
   voicePermissionDenied: string;
   voiceMessage: string;
   sendingVoice: string;
+  attachMedia: string;
+  photoMessage: string;
+  videoMessage: string;
+  sendingMedia: string;
+  removeAttachment: string;
   shareProfile: string;
   linkCopied: string;
   shareFailed: string;
@@ -497,6 +502,11 @@ const ar: Dictionary = {
   voicePermissionDenied: "يلزم السماح بالمايكروفون لإرسال صوت.",
   voiceMessage: "رسالة صوتية",
   sendingVoice: "جارٍ إرسال الصوت...",
+  attachMedia: "صورة أو فيديو",
+  photoMessage: "صورة",
+  videoMessage: "فيديو",
+  sendingMedia: "جارٍ إرسال الوسائط...",
+  removeAttachment: "إزالة المرفق",
   shareProfile: "مشاركة الصفحة",
   linkCopied: "تم نسخ الرابط",
   shareFailed: "تعذّرت المشاركة",
@@ -782,6 +792,11 @@ const en: Dictionary = {
   voicePermissionDenied: "Microphone permission is required to send voice.",
   voiceMessage: "Voice message",
   sendingVoice: "Sending voice...",
+  attachMedia: "Photo or video",
+  photoMessage: "Photo",
+  videoMessage: "Video",
+  sendingMedia: "Sending media...",
+  removeAttachment: "Remove attachment",
   shareProfile: "Share page",
   linkCopied: "Link copied",
   shareFailed: "Could not share",

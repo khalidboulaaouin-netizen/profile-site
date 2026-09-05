@@ -1510,6 +1510,44 @@ button.highlight.has-stories .highlight-cover {
   filter: contrast(1.05);
 }
 
+.chat-media {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 0.4rem;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.bubble.mine .chat-media {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.chat-attach-preview {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.chat-attach-preview img,
+.chat-attach-preview video {
+  display: block;
+  width: min(100%, 220px);
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.message-compose-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
 .voice-recorder {
   display: flex;
   flex-wrap: wrap;

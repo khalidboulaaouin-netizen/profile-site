@@ -98,8 +98,11 @@ export type ChatMessage = {
   id: string;
   from: "follower" | "owner";
   text: string;
-  /** Optional uploaded voice note URL under /uploads */
+  /** Optional uploaded voice note URL */
   audioUrl?: string;
+  /** Optional photo or video attachment URL */
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
   createdAt: string;
   readByOwner: boolean;
   readByFollower: boolean;

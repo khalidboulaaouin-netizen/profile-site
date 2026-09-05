@@ -1,10 +1,11 @@
 "use client";
 
 import { AdminNav } from "@/components/AdminNav";
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { FormEvent, useEffect, useRef, useState, useTransition } from "react";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 import type { Conversation } from "@/lib/types";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { isChatVideoMessage, uploadChatMedia } from "@/lib/chatMediaUpload";
 
 type ConversationSummary = {
   id: string;
@@ -19,12 +20,23 @@ type ConversationSummary = {
 
 async function uploadVoice(blob: Blob): Promise<string> {
   const form = new FormData();
-  const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+  const ext = blob.type.includes("mp4")
+    ? "m4a"
+    : blob.type.includes("ogg")
+      ? "ogg"
+      : "webm";
   form.append("file", blob, `voice.${ext}`);
   const res = await fetch("/api/messages/upload", { method: "POST", body: form });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "upload failed");
   return data.url as string;
+}
+
+function previewLabel(preview: string, t: Dictionary) {
+  if (preview === "__voice__") return t.voiceMessage;
+  if (preview === "__image__") return t.photoMessage;
+  if (preview === "__video__") return t.videoMessage;
+  return preview || t.noMessages;
 }
 
 export default function AdminMessagesPage() {
@@ -33,8 +45,11 @@ export default function AdminMessagesPage() {
   const [items, setItems] = useState<ConversationSummary[]>([]);
   const [active, setActive] = useState<Conversation | null>(null);
   const [reply, setReply] = useState("");
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadList = async () => {
     const [messagesRes, settingsRes] = await Promise.all([
@@ -53,9 +68,26 @@ export default function AdminMessagesPage() {
     loadList().catch(() => undefined);
   }, []);
 
+  useEffect(() => {
+    if (!pendingFile) {
+      setPreviewUrl("");
+      return;
+    }
+    const url = URL.createObjectURL(pendingFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pendingFile]);
+
+  function clearAttachment() {
+    setPendingFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   function openConversation(googleId: string) {
     startTransition(async () => {
-      const res = await fetch(`/api/messages?googleId=${encodeURIComponent(googleId)}`);
+      const res = await fetch(
+        `/api/messages?googleId=${encodeURIComponent(googleId)}`,
+      );
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || t.messageFailed);
@@ -63,28 +95,46 @@ export default function AdminMessagesPage() {
       }
       setActive(data.conversation);
       setReply("");
+      clearAttachment();
       await loadList();
     });
   }
 
   function onReply(e: FormEvent) {
     e.preventDefault();
-    if (!active || !reply.trim()) return;
+    if (!active || (!reply.trim() && !pendingFile)) return;
     setError("");
     startTransition(async () => {
-      const res = await fetch("/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ googleId: active.googleId, text: reply }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || t.messageFailed);
-        return;
+      try {
+        let mediaUrl: string | undefined;
+        let mediaType: "image" | "video" | undefined;
+        if (pendingFile) {
+          const uploaded = await uploadChatMedia(pendingFile);
+          mediaUrl = uploaded.url;
+          mediaType = uploaded.mediaType;
+        }
+        const res = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            googleId: active.googleId,
+            text: reply.trim() || undefined,
+            mediaUrl,
+            mediaType,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || t.messageFailed);
+          return;
+        }
+        setActive(data.conversation);
+        setReply("");
+        clearAttachment();
+        await loadList();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t.messageFailed);
       }
-      setActive(data.conversation);
-      setReply("");
-      await loadList();
     });
   }
 
@@ -111,6 +161,11 @@ export default function AdminMessagesPage() {
       }
     });
   }
+
+  const pendingIsVideo = pendingFile
+    ? pendingFile.type.startsWith("video/") ||
+      /\.(mp4|webm|mov|m4v)$/i.test(pendingFile.name)
+    : false;
 
   return (
     <main className="admin-page">
@@ -148,7 +203,9 @@ export default function AdminMessagesPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={item.image} alt="" />
                 ) : (
-                  <span className="viewer-fallback">{(item.name || "?").slice(0, 1)}</span>
+                  <span className="viewer-fallback">
+                    {(item.name || "?").slice(0, 1)}
+                  </span>
                 )}
                 <div>
                   <p style={{ margin: 0 }}>
@@ -164,9 +221,7 @@ export default function AdminMessagesPage() {
                   </small>
                   <div>
                     <small style={{ color: "var(--muted)" }}>
-                      {item.preview === "__voice__"
-                        ? t.voiceMessage
-                        : item.preview || t.noMessages}
+                      {previewLabel(item.preview, t)}
                     </small>
                   </div>
                   <div>
@@ -184,7 +239,14 @@ export default function AdminMessagesPage() {
         <div className="panel">
           <div className="message-sheet-head">
             <div>
-              <button type="button" className="btn-text" onClick={() => setActive(null)}>
+              <button
+                type="button"
+                className="btn-text"
+                onClick={() => {
+                  setActive(null);
+                  clearAttachment();
+                }}
+              >
                 {t.backToInbox}
               </button>
               <h1 style={{ marginTop: "0.5rem" }}>
@@ -197,22 +259,44 @@ export default function AdminMessagesPage() {
           </div>
 
           <div className="message-thread admin-thread">
-            {active.messages.map((m) => (
-              <div
-                key={m.id}
-                className={`bubble ${m.from === "owner" ? "mine" : "theirs"}`}
-              >
-                {m.audioUrl && (
-                  <audio className="voice-player" controls preload="metadata" src={m.audioUrl}>
-                    {t.voiceMessage}
-                  </audio>
-                )}
-                {m.text ? <p>{m.text}</p> : null}
-                <time dateTime={m.createdAt}>
-                  {new Date(m.createdAt).toLocaleString(locale)}
-                </time>
-              </div>
-            ))}
+            {active.messages.map((m) => {
+              const video = isChatVideoMessage(m.mediaType, m.mediaUrl);
+              return (
+                <div
+                  key={m.id}
+                  className={`bubble ${m.from === "owner" ? "mine" : "theirs"}`}
+                >
+                  {m.mediaUrl ? (
+                    video ? (
+                      <video
+                        className="chat-media"
+                        src={m.mediaUrl}
+                        controls
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="chat-media" src={m.mediaUrl} alt="" />
+                    )
+                  ) : null}
+                  {m.audioUrl && (
+                    <audio
+                      className="voice-player"
+                      controls
+                      preload="metadata"
+                      src={m.audioUrl}
+                    >
+                      {t.voiceMessage}
+                    </audio>
+                  )}
+                  {m.text ? <p>{m.text}</p> : null}
+                  <time dateTime={m.createdAt}>
+                    {new Date(m.createdAt).toLocaleString(locale)}
+                  </time>
+                </div>
+              );
+            })}
           </div>
 
           <form className="form-stack message-compose" onSubmit={onReply}>
@@ -223,18 +307,66 @@ export default function AdminMessagesPage() {
               maxLength={1000}
               rows={3}
             />
-            <VoiceRecorder
-              disabled={pending}
-              labels={t}
-              onRecorded={onVoice}
-            />
+            {previewUrl && (
+              <div className="chat-attach-preview">
+                {pendingIsVideo ? (
+                  <video
+                    src={previewUrl}
+                    muted
+                    playsInline
+                    controls
+                    preload="metadata"
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={previewUrl} alt="" />
+                )}
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={clearAttachment}
+                  disabled={pending}
+                >
+                  {t.removeAttachment}
+                </button>
+              </div>
+            )}
+            <div className="message-compose-actions">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/mp4,video/webm,video/quicktime,video/*"
+                hidden
+                onChange={(e) => {
+                  setPendingFile(e.target.files?.[0] || null);
+                  setError("");
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={pending}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {t.attachMedia}
+              </button>
+              <VoiceRecorder
+                disabled={pending}
+                labels={t}
+                onRecorded={onVoice}
+              />
+            </div>
             {error && <p className="hint">{error}</p>}
             <button
               className="btn btn-primary"
               type="submit"
-              disabled={pending || !reply.trim()}
+              disabled={pending || (!reply.trim() && !pendingFile)}
             >
-              {pending ? t.loading : t.sendReply}
+              {pending
+                ? pendingFile
+                  ? t.sendingMedia
+                  : t.loading
+                : t.sendReply}
             </button>
           </form>
         </div>

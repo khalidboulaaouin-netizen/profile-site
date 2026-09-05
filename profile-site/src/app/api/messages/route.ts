@@ -54,9 +54,12 @@ export async function GET(request: Request) {
         preview: (() => {
           const last = c.messages[c.messages.length - 1];
           if (!last) return "";
-          if (last.audioUrl && !last.text) return "__voice__";
-          if (last.audioUrl && last.text) return last.text;
-          return last.text || "";
+          if (last.text) return last.text;
+          if (last.mediaUrl) {
+            return last.mediaType === "video" ? "__video__" : "__image__";
+          }
+          if (last.audioUrl) return "__voice__";
+          return "";
         })(),
         unread: c.messages.filter((m) => m.from === "follower" && !m.readByOwner).length,
       })),
@@ -92,10 +95,21 @@ export async function POST(request: Request) {
   const body = await request.json();
   const text = String(body.text || "");
   const audioUrl = String(body.audioUrl || "");
+  const mediaUrl = String(body.mediaUrl || "");
+  const mediaType =
+    body.mediaType === "video" || body.mediaType === "image"
+      ? (body.mediaType as "image" | "video")
+      : undefined;
 
   if (session?.user?.role === "admin") {
     const googleId = String(body.googleId || "");
-    const conversation = await sendOwnerReply({ googleId, text, audioUrl });
+    const conversation = await sendOwnerReply({
+      googleId,
+      text,
+      audioUrl,
+      mediaUrl,
+      mediaType,
+    });
     if (!conversation) {
       return NextResponse.json({ error: "تعذّر إرسال الرد" }, { status: 400 });
     }
@@ -120,6 +134,8 @@ export async function POST(request: Request) {
     image: session.user.image || "",
     text,
     audioUrl,
+    mediaUrl,
+    mediaType,
   });
 
   if (!conversation) {

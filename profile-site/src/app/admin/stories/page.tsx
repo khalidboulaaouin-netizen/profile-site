@@ -170,6 +170,29 @@ export default function AdminStoriesPage() {
                               {t.since} {new Date(v.viewedAt).toLocaleString(locale)}
                             </small>
                           </div>
+                          <button
+                            type="button"
+                            className="btn-text"
+                            disabled={pending}
+                            onClick={() => {
+                              if (!confirm(t.blockConfirm)) return;
+                              startTransition(async () => {
+                                await fetch("/api/block", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    googleId: v.googleId,
+                                    name: v.name,
+                                    email: v.email,
+                                    image: v.image,
+                                  }),
+                                });
+                                await load();
+                              });
+                            }}
+                          >
+                            {t.block}
+                          </button>
                         </div>
                       </div>
                     ))}

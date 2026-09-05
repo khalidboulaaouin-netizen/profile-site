@@ -114,6 +114,15 @@ export type Dictionary = {
   noStoryViewers: string;
   expires: string;
   deleteCommentConfirm: string;
+  block: string;
+  unblock: string;
+  blockConfirm: string;
+  blockedUsers: string;
+  blockedUsersLede: string;
+  noBlockedUsers: string;
+  blockedPageTitle: string;
+  blockedPageMessage: string;
+  youAreBlocked: string;
 };
 
 const ar: Dictionary = {
@@ -219,6 +228,15 @@ const ar: Dictionary = {
   noStoryViewers: "لا مشاهدين بعد.",
   expires: "تنتهي",
   deleteCommentConfirm: "هل تريد حذف هذا التعليق؟",
+  block: "حظر",
+  unblock: "إلغاء الحظر",
+  blockConfirm: "هل تريد حظر هذا الشخص؟ لن يتمكن من رؤية صفحتك أثناء تسجيل دخوله عبر Google.",
+  blockedUsers: "المحظورون",
+  blockedUsersLede: "هؤلاء لا يمكنهم رؤية الصفحة أو المتابعة أو مشاهدة الستوري أثناء تسجيل دخولهم عبر Google.",
+  noBlockedUsers: "لا يوجد أحد في قائمة الحظر.",
+  blockedPageTitle: "لا يمكنك عرض هذه الصفحة",
+  blockedPageMessage: "تم حظرك من الوصول إلى هذا المحتوى.",
+  youAreBlocked: "تم حظرك من هذه الصفحة.",
 };
 
 const en: Dictionary = {
@@ -324,6 +342,15 @@ const en: Dictionary = {
   noStoryViewers: "No viewers yet.",
   expires: "Expires",
   deleteCommentConfirm: "Delete this comment?",
+  block: "Block",
+  unblock: "Unblock",
+  blockConfirm: "Block this person? They won’t be able to view your page while signed in with Google.",
+  blockedUsers: "Blocked",
+  blockedUsersLede: "These people can’t view the page, follow, or open stories while signed in with Google.",
+  noBlockedUsers: "No blocked users yet.",
+  blockedPageTitle: "You can’t view this page",
+  blockedPageMessage: "You have been blocked from accessing this content.",
+  youAreBlocked: "You are blocked from this page.",
 };
 
 const fr: Dictionary = {

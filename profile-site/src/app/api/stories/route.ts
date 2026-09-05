@@ -5,6 +5,7 @@ import {
   addStory,
   deleteStory,
   getStoryViewers,
+  isBlocked,
   listActiveStories,
   readStore,
   recordStoryView,
@@ -28,9 +29,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ viewers });
   }
 
+  const session = await auth();
+  if (session?.user?.role === "follower" && (await isBlocked(session.user.id))) {
+    return NextResponse.json(
+      { error: "لا يمكنك مشاهدة هذه الصفحة", stories: [], blocked: true },
+      { status: 403 },
+    );
+  }
+
   const store = await readStore();
   const stories = await listActiveStories();
-  const session = await auth();
   const isAdmin = session?.user?.role === "admin";
 
   return NextResponse.json({
@@ -65,6 +73,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "يجب تسجيل الدخول عبر Google لمشاهدة الستوري" },
         { status: 401 },
+      );
+    }
+
+    if (await isBlocked(session.user.id)) {
+      return NextResponse.json(
+        { error: "لا يمكنك مشاهدة الستوري" },
+        { status: 403 },
       );
     }
 

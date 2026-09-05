@@ -58,6 +58,14 @@ export type Follower = {
   followedAt: string;
 };
 
+export type BlockedUser = {
+  googleId: string;
+  name: string;
+  email: string;
+  image: string;
+  blockedAt: string;
+};
+
 export type SiteSettings = {
   siteTitle: string;
   siteDescription: string;
@@ -83,5 +91,6 @@ export type Store = {
   highlights: Highlight[];
   stories: Story[];
   followers: Follower[];
+  blockedUsers: BlockedUser[];
   settings: SiteSettings;
 };

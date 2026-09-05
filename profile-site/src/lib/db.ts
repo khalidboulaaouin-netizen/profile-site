@@ -8,6 +8,7 @@ import type {
   Highlight,
   SiteSettings,
   Follower,
+  BlockedUser,
   Story,
   StoryViewer,
 } from "./types";
@@ -35,6 +36,7 @@ const defaultStore = (): Store => ({
   ],
   stories: [],
   followers: [],
+  blockedUsers: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",
     siteDescription:
@@ -80,6 +82,7 @@ function normalizeStore(store: Store): Store {
     stories: (store.stories || [])
       .map(normalizeStory)
       .filter((story) => isStoryActive(story, now)),
+    blockedUsers: Array.isArray(store.blockedUsers) ? store.blockedUsers : [],
     settings: {
       ...defaultStore().settings,
       ...store.settings,
@@ -258,8 +261,11 @@ export async function followWithGoogle(input: {
   name: string;
   email: string;
   image: string;
-}): Promise<{ follower: Follower; alreadyFollowing: boolean }> {
+}): Promise<{ follower: Follower; alreadyFollowing: boolean } | null> {
   const store = await readStore();
+  if ((store.blockedUsers || []).some((u) => u.googleId === input.googleId)) {
+    return null;
+  }
   const existing = store.followers.find((f) => f.googleId === input.googleId);
   if (existing) {
     return { follower: existing, alreadyFollowing: true };
@@ -359,4 +365,56 @@ export async function getStoryViewers(storyId: string): Promise<StoryViewer[] | 
   const story = store.stories.find((s) => s.id === storyId);
   if (!story) return null;
   return normalizeStory(story).viewers;
+}
+
+export async function isBlocked(googleId: string): Promise<boolean> {
+  if (!googleId) return false;
+  const store = await readStore();
+  return (store.blockedUsers || []).some((u) => u.googleId === googleId);
+}
+
+export async function listBlockedUsers(): Promise<BlockedUser[]> {
+  const store = await readStore();
+  return store.blockedUsers || [];
+}
+
+export async function blockUser(input: {
+  googleId: string;
+  name?: string;
+  email?: string;
+  image?: string;
+}): Promise<BlockedUser | null> {
+  const googleId = String(input.googleId || "").trim();
+  if (!googleId) return null;
+
+  const store = await readStore();
+  const existing = (store.blockedUsers || []).find((u) => u.googleId === googleId);
+  if (existing) {
+    // Ensure they are also removed from followers
+    store.followers = store.followers.filter((f) => f.googleId !== googleId);
+    await writeStore(store);
+    return existing;
+  }
+
+  const follower = store.followers.find((f) => f.googleId === googleId);
+  const blocked: BlockedUser = {
+    googleId,
+    name: (input.name || follower?.name || "مستخدم").trim().slice(0, 80),
+    email: (input.email || follower?.email || "").trim().slice(0, 120),
+    image: input.image || follower?.image || "",
+    blockedAt: new Date().toISOString(),
+  };
+
+  store.blockedUsers = [blocked, ...(store.blockedUsers || [])];
+  store.followers = store.followers.filter((f) => f.googleId !== googleId);
+  await writeStore(store);
+  return blocked;
+}
+
+export async function unblockUser(googleId: string): Promise<boolean> {
+  const store = await readStore();
+  const before = (store.blockedUsers || []).length;
+  store.blockedUsers = (store.blockedUsers || []).filter((u) => u.googleId !== googleId);
+  await writeStore(store);
+  return store.blockedUsers.length < before;
 }

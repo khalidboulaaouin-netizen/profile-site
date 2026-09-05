@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { requireAdmin } from "@/lib/admin";
-import { addComment, deleteComment, readStore } from "@/lib/db";
+import { addComment, deleteComment, isBlocked, readStore } from "@/lib/db";
 
 export async function POST(request: Request) {
   const store = await readStore();
   if (!store.settings.enableComments) {
     return NextResponse.json({ error: "Comments are disabled" }, { status: 403 });
+  }
+
+  const session = await auth();
+  if (session?.user?.role === "follower" && (await isBlocked(session.user.id))) {
+    return NextResponse.json({ error: "لا يمكنك التعليق على هذه الصفحة" }, { status: 403 });
   }
 
   const body = await request.json();

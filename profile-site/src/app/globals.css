@@ -825,6 +825,26 @@ textarea {
   font-size: 0.85rem;
 }
 
+.blocked-page {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+}
+
+.blocked-panel {
+  width: min(480px, 100%);
+  text-align: center;
+}
+
+.blocked-panel h1 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display), sans-serif;
+}
+
+.blocked-panel .lede {
+  margin: 0;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

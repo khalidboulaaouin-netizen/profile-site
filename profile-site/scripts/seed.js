@@ -94,6 +94,7 @@ const store = {
   highlights: highlightCovers,
   stories: [],
   followers: [],
+  blockedUsers: [],
   settings: {
     siteTitle: "حضوري — صفحتي الشخصية",
     siteDescription:

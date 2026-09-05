@@ -3,7 +3,8 @@ import { FollowButton } from "@/components/FollowButton";
 import { PostGrid } from "@/components/PostGrid";
 import { HighlightsRow, ProfileHeader } from "@/components/ProfileHeader";
 import { StoryRing } from "@/components/StoryRing";
-import { readStore } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { isBlocked, readStore } from "@/lib/db";
 import { getDictionary, normalizeLocale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,18 @@ export default async function HomePage() {
   const store = await readStore();
   const locale = normalizeLocale(store.settings.language);
   const t = getDictionary(locale);
+  const session = await auth();
+
+  if (session?.user?.role === "follower" && (await isBlocked(session.user.id))) {
+    return (
+      <main className="site-frame blocked-page">
+        <div className="panel blocked-panel">
+          <h1>{t.blockedPageTitle}</h1>
+          <p className="lede">{t.blockedPageMessage}</p>
+        </div>
+      </main>
+    );
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",

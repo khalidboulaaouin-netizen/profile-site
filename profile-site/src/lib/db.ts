@@ -12,6 +12,7 @@ import type {
   Story,
   StoryViewer,
 } from "./types";
+import { normalizeDecoration, normalizeHex } from "./theme";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "store.json");
@@ -50,6 +51,9 @@ const defaultStore = (): Store => ({
     hideFollowers: false,
     enableLikes: true,
     enableComments: true,
+    accentColor: "#0d6e6e",
+    backgroundColor: "#eef2f4",
+    decoration: "soft",
   },
 });
 
@@ -91,6 +95,9 @@ function normalizeStore(store: Store): Store {
       hideFollowers: store.settings?.hideFollowers ?? false,
       enableLikes: store.settings?.enableLikes ?? true,
       enableComments: store.settings?.enableComments ?? true,
+      accentColor: normalizeHex(store.settings?.accentColor, "#0d6e6e"),
+      backgroundColor: normalizeHex(store.settings?.backgroundColor, "#eef2f4"),
+      decoration: normalizeDecoration(store.settings?.decoration),
     },
   };
 }
@@ -137,6 +144,20 @@ export async function updateSettings(patch: Partial<SiteSettings>): Promise<Site
   const clean = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   ) as Partial<SiteSettings>;
+
+  if (clean.accentColor !== undefined) {
+    clean.accentColor = normalizeHex(clean.accentColor, store.settings.accentColor || "#0d6e6e");
+  }
+  if (clean.backgroundColor !== undefined) {
+    clean.backgroundColor = normalizeHex(
+      clean.backgroundColor,
+      store.settings.backgroundColor || "#eef2f4",
+    );
+  }
+  if (clean.decoration !== undefined) {
+    clean.decoration = normalizeDecoration(clean.decoration);
+  }
+
   store.settings = {
     ...defaultStore().settings,
     ...store.settings,

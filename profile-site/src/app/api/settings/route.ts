@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { readStore, updateSettings, setHighlights } from "@/lib/db";
+import { normalizeDecoration } from "@/lib/theme";
 
 export async function GET() {
   const store = await readStore();
@@ -37,6 +38,11 @@ export async function PATCH(request: Request) {
     enableLikes: body.enableLikes !== undefined ? Boolean(body.enableLikes) : undefined,
     enableComments:
       body.enableComments !== undefined ? Boolean(body.enableComments) : undefined,
+    accentColor: body.accentColor !== undefined ? String(body.accentColor) : undefined,
+    backgroundColor:
+      body.backgroundColor !== undefined ? String(body.backgroundColor) : undefined,
+    decoration:
+      body.decoration !== undefined ? normalizeDecoration(String(body.decoration)) : undefined,
   });
 
   return NextResponse.json({ settings });

@@ -108,6 +108,9 @@ const store = {
     hideFollowers: false,
     enableLikes: true,
     enableComments: true,
+    accentColor: "#0d6e6e",
+    backgroundColor: "#eef2f4",
+    decoration: "soft",
   },
 };
 

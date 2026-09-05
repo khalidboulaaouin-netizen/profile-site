@@ -83,6 +83,12 @@ export type SiteSettings = {
   enableLikes: boolean;
   /** Show comments and allow writing comments */
   enableComments: boolean;
+  /** Primary accent color (hex) */
+  accentColor: string;
+  /** Page background color (hex) */
+  backgroundColor: string;
+  /** Background decoration style */
+  decoration: "soft" | "mesh" | "dots" | "waves" | "none";
 };
 
 export type Store = {

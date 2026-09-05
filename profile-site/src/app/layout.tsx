@@ -3,6 +3,7 @@ import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { readStore } from "@/lib/db";
 import { getLocaleMeta, getOgLocale } from "@/lib/i18n";
+import { themeCssVars } from "@/lib/theme";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -70,10 +71,15 @@ export default async function RootLayout({
 }>) {
   const store = await readStore();
   const locale = getLocaleMeta(store.settings.language);
+  const themeVars = themeCssVars(store.settings);
 
   return (
     <html lang={locale.code} dir={locale.dir}>
-      <body className={`${cairo.variable} ${ibm.variable} antialiased`}>
+      <body
+        className={`${cairo.variable} ${ibm.variable} antialiased`}
+        data-decoration={themeVars["--decoration"]}
+        style={themeVars as React.CSSProperties}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -118,7 +118,10 @@
     "verified": true,
     "hideFollowers": false,
     "enableLikes": true,
-    "enableComments": true
+    "enableComments": true,
+    "accentColor": "#1d6fbf",
+    "backgroundColor": "#eef3f8",
+    "decoration": "waves"
   },
   "blockedUsers": []
 }

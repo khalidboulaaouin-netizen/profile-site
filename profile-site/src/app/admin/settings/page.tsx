@@ -268,6 +268,102 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="panel" style={{ marginTop: "1rem" }}>
+        <h2>{t.appearanceSection}</h2>
+        <p className="lede">{t.appearanceLede}</p>
+        <form className="form-stack" onSubmit={saveSettings}>
+          <div>
+            <p className="theme-label">{t.themePresets}</p>
+            <div className="theme-presets">
+              {(
+                [
+                  ["teal", t.presetTeal, "#0d6e6e", "#eef2f4", "soft"],
+                  ["ocean", t.presetOcean, "#1d6fbf", "#eef3f8", "waves"],
+                  ["forest", t.presetForest, "#2f6b3c", "#eef3ee", "mesh"],
+                  ["sunset", t.presetSunset, "#b85a2a", "#f6efe8", "soft"],
+                  ["rose", t.presetRose, "#9b3d5a", "#f7eef1", "dots"],
+                  ["ink", t.presetInk, "#243447", "#eef1f4", "none"],
+                ] as const
+              ).map(([id, label, accent, background, decoration]) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`theme-preset ${
+                    settings.accentColor?.toLowerCase() === accent &&
+                    settings.backgroundColor?.toLowerCase() === background
+                      ? "active"
+                      : ""
+                  }`}
+                  style={
+                    {
+                      "--preset-accent": accent,
+                      "--preset-bg": background,
+                    } as React.CSSProperties
+                  }
+                  onClick={() =>
+                    setSettings({
+                      ...settings,
+                      accentColor: accent,
+                      backgroundColor: background,
+                      decoration,
+                    })
+                  }
+                >
+                  <span className="theme-preset-swatch" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="theme-colors">
+            <label>
+              {t.accentColor}
+              <input
+                type="color"
+                value={settings.accentColor || "#0d6e6e"}
+                onChange={(e) =>
+                  setSettings({ ...settings, accentColor: e.target.value })
+                }
+              />
+            </label>
+            <label>
+              {t.backgroundColor}
+              <input
+                type="color"
+                value={settings.backgroundColor || "#eef2f4"}
+                onChange={(e) =>
+                  setSettings({ ...settings, backgroundColor: e.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <label>
+            {t.decorationStyle}
+            <select
+              value={settings.decoration || "soft"}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  decoration: e.target.value as SiteSettings["decoration"],
+                })
+              }
+            >
+              <option value="soft">{t.decorationSoft}</option>
+              <option value="mesh">{t.decorationMesh}</option>
+              <option value="dots">{t.decorationDots}</option>
+              <option value="waves">{t.decorationWaves}</option>
+              <option value="none">{t.decorationNone}</option>
+            </select>
+          </label>
+
+          <button className="btn btn-primary" type="submit" disabled={busy}>
+            {t.saveAppearance}
+          </button>
+        </form>
+      </div>
+
+      <div className="panel" style={{ marginTop: "1rem" }}>
         <h2>{t.privacySection}</h2>
         <p className="lede">{t.privacyLede}</p>
         <form className="form-stack" onSubmit={saveSettings}>

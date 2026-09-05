@@ -123,6 +123,24 @@ export type Dictionary = {
   blockedPageTitle: string;
   blockedPageMessage: string;
   youAreBlocked: string;
+  appearanceSection: string;
+  appearanceLede: string;
+  themePresets: string;
+  accentColor: string;
+  backgroundColor: string;
+  decorationStyle: string;
+  decorationSoft: string;
+  decorationMesh: string;
+  decorationDots: string;
+  decorationWaves: string;
+  decorationNone: string;
+  saveAppearance: string;
+  presetTeal: string;
+  presetOcean: string;
+  presetForest: string;
+  presetSunset: string;
+  presetRose: string;
+  presetInk: string;
 };
 
 const ar: Dictionary = {
@@ -237,6 +255,24 @@ const ar: Dictionary = {
   blockedPageTitle: "لا يمكنك عرض هذه الصفحة",
   blockedPageMessage: "تم حظرك من الوصول إلى هذا المحتوى.",
   youAreBlocked: "تم حظرك من هذه الصفحة.",
+  appearanceSection: "الألوان والزخرفة",
+  appearanceLede: "اختر لوناً أساسياً وخلفية ونمط زخرفة للصفحة العامة. تظهر التغييرات فوراً بعد الحفظ.",
+  themePresets: "قوالب جاهزة",
+  accentColor: "اللون الأساسي",
+  backgroundColor: "لون الخلفية",
+  decorationStyle: "نمط الزخرفة",
+  decorationSoft: "توهج ناعم",
+  decorationMesh: "شبكة ضوئية",
+  decorationDots: "نقاط",
+  decorationWaves: "أمواج",
+  decorationNone: "بدون زخرفة",
+  saveAppearance: "حفظ المظهر",
+  presetTeal: "فيروزي",
+  presetOcean: "محيط",
+  presetForest: "غابة",
+  presetSunset: "غروب",
+  presetRose: "وردي",
+  presetInk: "حبر",
 };
 
 const en: Dictionary = {
@@ -351,6 +387,24 @@ const en: Dictionary = {
   blockedPageTitle: "You can’t view this page",
   blockedPageMessage: "You have been blocked from accessing this content.",
   youAreBlocked: "You are blocked from this page.",
+  appearanceSection: "Colors & decoration",
+  appearanceLede: "Choose an accent color, background, and decoration for the public page. Changes apply right after saving.",
+  themePresets: "Ready-made themes",
+  accentColor: "Accent color",
+  backgroundColor: "Background color",
+  decorationStyle: "Decoration style",
+  decorationSoft: "Soft glow",
+  decorationMesh: "Light mesh",
+  decorationDots: "Dots",
+  decorationWaves: "Waves",
+  decorationNone: "No decoration",
+  saveAppearance: "Save appearance",
+  presetTeal: "Teal",
+  presetOcean: "Ocean",
+  presetForest: "Forest",
+  presetSunset: "Sunset",
+  presetRose: "Rose",
+  presetInk: "Ink",
 };
 
 const fr: Dictionary = {

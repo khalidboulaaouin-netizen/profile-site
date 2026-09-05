@@ -66,14 +66,18 @@ export default async function HomePage() {
           following: t.following,
           highlights: t.highlights,
           verifiedLabel: t.verifiedLabel,
-          followOnSocial: t.followOnSocial,
-          instagram: t.instagram,
-          facebook: t.facebook,
-          tiktok: t.tiktok,
         }}
         followSlot={
           <div className="profile-actions">
-            <FollowButton labels={t} locale={locale} />
+            <FollowButton
+              labels={t}
+              locale={locale}
+              social={{
+                instagramUrl: store.profile.instagramUrl,
+                facebookUrl: store.profile.facebookUrl,
+                tiktokUrl: store.profile.tiktokUrl,
+              }}
+            />
             <MessageButton labels={t} />
           </div>
         }

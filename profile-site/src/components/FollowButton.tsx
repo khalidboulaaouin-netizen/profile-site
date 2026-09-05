@@ -12,8 +12,15 @@ type FollowState = {
   allowFollow: boolean;
 };
 
+type SocialLinks = {
+  instagramUrl?: string;
+  facebookUrl?: string;
+  tiktokUrl?: string;
+};
+
 export function FollowButton({
   labels,
+  social,
 }: {
   labels: Pick<
     Dictionary,
@@ -23,13 +30,25 @@ export function FollowButton({
     | "loading"
     | "enableGoogleFirst"
     | "youAreBlocked"
+    | "chooseFollowPlatform"
+    | "followOneTapHint"
+    | "instagram"
+    | "facebook"
+    | "tiktok"
+    | "google"
   >;
+  social?: SocialLinks;
   locale?: string;
 }) {
   const { data: session, status } = useSession();
   const [state, setState] = useState<FollowState | null>(null);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
+
+  const instagramUrl = social?.instagramUrl?.trim() || "";
+  const facebookUrl = social?.facebookUrl?.trim() || "";
+  const tiktokUrl = social?.tiktokUrl?.trim() || "";
+  const hasSocial = Boolean(instagramUrl || facebookUrl || tiktokUrl);
 
   useEffect(() => {
     fetch("/api/follow")
@@ -43,7 +62,7 @@ export function FollowButton({
       .then((r) => r.json())
       .then(setState);
 
-  const handleFollow = () => {
+  const handleGoogleFollow = () => {
     setMessage("");
     startTransition(async () => {
       if (!state?.googleConfigured) {
@@ -52,6 +71,7 @@ export function FollowButton({
       }
 
       if (!session || session.user.role !== "follower") {
+        // One tap: Google consent, then return and follow — no account on this site
         await signIn("google", { callbackUrl: "/?follow=1" });
         return;
       }
@@ -91,11 +111,12 @@ export function FollowButton({
     }
   }, [session]);
 
-  if (!state?.allowFollow) return null;
+  const showGoogle = Boolean(state?.allowFollow && state?.googleConfigured);
+  if (!showGoogle && !hasSocial) return null;
 
-  if (state.blocked) {
+  if (state?.blocked) {
     return (
-      <div className="follow-block">
+      <div className="follow-chooser">
         <p className="hint">{labels.youAreBlocked}</p>
         {session?.user?.role === "follower" && (
           <button
@@ -110,18 +131,56 @@ export function FollowButton({
     );
   }
 
-  const label = state?.following ? labels.unfollow : labels.followGoogle;
-
   return (
-    <div className="follow-block">
-      <button
-        type="button"
-        className={`btn ${state?.following ? "btn-ghost" : "btn-primary"}`}
-        onClick={handleFollow}
-        disabled={pending || status === "loading"}
-      >
-        {pending ? labels.loading : label}
-      </button>
+    <div className="follow-chooser">
+      <p className="follow-chooser-title">{labels.chooseFollowPlatform}</p>
+      <p className="follow-chooser-hint">{labels.followOneTapHint}</p>
+      <div className="follow-platforms">
+        {showGoogle && (
+          <button
+            type="button"
+            className={`btn follow-platform ${state?.following ? "btn-ghost" : "btn-primary"}`}
+            onClick={handleGoogleFollow}
+            disabled={pending || status === "loading"}
+          >
+            {pending
+              ? labels.loading
+              : state?.following
+                ? labels.unfollow
+                : labels.google}
+          </button>
+        )}
+        {instagramUrl && (
+          <a
+            className="btn btn-ghost follow-platform"
+            href={instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {labels.instagram}
+          </a>
+        )}
+        {facebookUrl && (
+          <a
+            className="btn btn-ghost follow-platform"
+            href={facebookUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {labels.facebook}
+          </a>
+        )}
+        {tiktokUrl && (
+          <a
+            className="btn btn-ghost follow-platform"
+            href={tiktokUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {labels.tiktok}
+          </a>
+        )}
+      </div>
       {session?.user?.role === "follower" && (
         <button
           type="button"

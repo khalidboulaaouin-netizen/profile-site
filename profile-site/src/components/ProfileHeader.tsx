@@ -36,10 +36,6 @@ export function ProfileHeader({
     following: string;
     highlights: string;
     verifiedLabel: string;
-    followOnSocial: string;
-    instagram: string;
-    facebook: string;
-    tiktok: string;
   };
   verified?: boolean;
   hideFollowers?: boolean;
@@ -86,40 +82,6 @@ export function ProfileHeader({
                 </a>
               )}
             </div>
-            {(profile.instagramUrl || profile.facebookUrl || profile.tiktokUrl) && (
-              <div className="social-follow" aria-label={labels.followOnSocial}>
-                {profile.instagramUrl && (
-                  <a
-                    className="social-link"
-                    href={profile.instagramUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {labels.instagram}
-                  </a>
-                )}
-                {profile.facebookUrl && (
-                  <a
-                    className="social-link"
-                    href={profile.facebookUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {labels.facebook}
-                  </a>
-                )}
-                {profile.tiktokUrl && (
-                  <a
-                    className="social-link"
-                    href={profile.tiktokUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {labels.tiktok}
-                  </a>
-                )}
-              </div>
-            )}
             {followSlot}
           </div>
         </div>

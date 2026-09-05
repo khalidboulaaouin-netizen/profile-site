@@ -70,6 +70,9 @@ export type Dictionary = {
   tiktokUrl: string;
   socialLinksHelp: string;
   followOnSocial: string;
+  chooseFollowPlatform: string;
+  followOneTapHint: string;
+  google: string;
   instagram: string;
   facebook: string;
   tiktok: string;
@@ -252,6 +255,9 @@ const ar: Dictionary = {
   socialLinksHelp:
     "أضف روابط حساباتك ليتمكن الزوار من متابعتك هناك حتى بدون Google. متابعة الموقع والرسائل والستوري تبقى عبر Google.",
   followOnSocial: "تابعني على",
+  chooseFollowPlatform: "تابعني — اختر المنصة",
+  followOneTapHint: "ضغطة واحدة فقط. لا حساب جديد على هذه الصفحة.",
+  google: "Google",
   instagram: "إنستغرام",
   facebook: "فيسبوك",
   tiktok: "تيك توك",
@@ -438,6 +444,9 @@ const en: Dictionary = {
   socialLinksHelp:
     "Add your social profile links so visitors can follow you there without Google. Site follow, messages, and stories still use Google.",
   followOnSocial: "Follow me on",
+  chooseFollowPlatform: "Follow me — pick a platform",
+  followOneTapHint: "One tap only. No new account on this page.",
+  google: "Google",
   instagram: "Instagram",
   facebook: "Facebook",
   tiktok: "TikTok",

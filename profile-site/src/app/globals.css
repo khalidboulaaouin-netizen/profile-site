@@ -1492,6 +1492,26 @@ button.highlight.has-stories .highlight-cover {
   margin: 0.75rem 0 0.25rem;
 }
 
+.owner-entry-btn {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.owner-login-foot {
+  text-align: center;
+  margin: 0.35rem 0 1.25rem;
+}
+
+.owner-login-foot a {
+  color: var(--accent, #0095f6);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.owner-login-foot a:hover {
+  text-decoration: underline;
+}
+
 .share-wrap,
 .theme-toggle {
   display: inline-flex;

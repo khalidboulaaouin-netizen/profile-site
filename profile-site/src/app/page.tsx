@@ -110,6 +110,15 @@ export default async function HomePage() {
             shareFailed: t.shareFailed,
           }}
         />
+        {session?.user?.role === "admin" ? (
+          <a className="btn btn-primary owner-entry-btn" href="/admin">
+            {t.dashboard}
+          </a>
+        ) : (
+          <a className="btn btn-primary owner-entry-btn" href="/login">
+            {t.ownerLogin}
+          </a>
+        )}
       </div>
 
       <ProfileHeader
@@ -178,6 +187,11 @@ export default async function HomePage() {
       />
 
       <p className="footer-note">{t.footerNote}</p>
+      {session?.user?.role !== "admin" ? (
+        <p className="owner-login-foot">
+          <a href="/login">{t.ownerLogin}</a>
+        </p>
+      ) : null}
 
       <InstallAppPrompt
         labels={{

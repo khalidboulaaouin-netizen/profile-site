@@ -52,7 +52,12 @@ const providers = [
         .trim()
         .toLowerCase();
       const password = String(credentials?.password || "");
-      const adminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+      // Owner login is locked to this mailbox only (password comes from env).
+      const adminEmail = (
+        process.env.ADMIN_EMAIL || "KhalidBoulaaouin@gmail.com"
+      )
+        .trim()
+        .toLowerCase();
 
       if (!email || !password || !adminEmail) return null;
       if (email !== adminEmail) return null;

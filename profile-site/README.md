@@ -18,13 +18,11 @@ npm run dev
 
 افتح: [http://localhost:3000](http://localhost:3000)
 
-### دخول المالك (افتراضي للتطوير)
+### دخول المالك
 
 - الرابط: `/login`
-- الإيميل: `KhalidBoulaaouin@gmail.com`
-- كلمة المرور: `TempChangeMe2026!`
-
-غيّر `ADMIN_EMAIL` و`ADMIN_PASSWORD` في `.env.local` قبل النشر.
+- الإيميل فقط: `KhalidBoulaaouin@gmail.com` (مثبت في صفحة الدخول والتحقق)
+- كلمة المرور: تضعها أنت لاحقاً في `ADMIN_PASSWORD` داخل `.env.local` (أو متغيرات Vercel)
 
 ## اللغات
 

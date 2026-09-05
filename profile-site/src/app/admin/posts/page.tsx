@@ -1,11 +1,12 @@
 "use client";
 
 import { AdminNav } from "@/components/AdminNav";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { upload } from "@vercel/blob/client";
 import type { Post } from "@/lib/types";
 import { getDictionary, normalizeLocale, type Dictionary } from "@/lib/i18n";
 
-async function uploadFile(
+async function uploadViaApi(
   file: File,
 ): Promise<{ url: string; mediaType: "image" | "video" }> {
   const body = new FormData();
@@ -19,6 +20,41 @@ async function uploadFile(
   };
 }
 
+function isVideoFile(file: File) {
+  const mime = (file.type || "").toLowerCase();
+  if (mime.startsWith("video/")) return true;
+  return /\.(mp4|webm|mov|m4v)$/i.test(file.name);
+}
+
+async function uploadFile(
+  file: File,
+): Promise<{ url: string; mediaType: "image" | "video" }> {
+  const mediaType = isVideoFile(file) ? "video" : "image";
+  // Direct-to-Blob for videos / larger files (avoids Vercel ~4.5MB API body limit)
+  const useClientBlob = mediaType === "video" || file.size > 3.5 * 1024 * 1024;
+
+  if (useClientBlob) {
+    try {
+      const ext =
+        file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+        (mediaType === "video" ? "mp4" : "jpg");
+      const pathname = `uploads/${crypto.randomUUID()}.${ext}`;
+      const blob = await upload(pathname, file, {
+        access: "public",
+        handleUploadUrl: "/api/blob-upload",
+        contentType:
+          file.type || (mediaType === "video" ? "video/mp4" : "image/jpeg"),
+        multipart: file.size > 8 * 1024 * 1024,
+      });
+      return { url: blob.url, mediaType };
+    } catch {
+      return uploadViaApi(file);
+    }
+  }
+
+  return uploadViaApi(file);
+}
+
 type PublishKind = "media" | "text";
 
 export default function AdminPostsPage() {
@@ -30,6 +66,8 @@ export default function AdminPostsPage() {
   const [error, setError] = useState("");
   const [locale, setLocale] = useState("ar");
   const [t, setT] = useState<Dictionary>(() => getDictionary("ar"));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const load = () =>
     fetch("/api/posts")
@@ -48,6 +86,15 @@ export default function AdminPostsPage() {
       .catch(() => undefined);
   }, []);
 
+  function resolveSelectedFile(input: HTMLInputElement | null): File | null {
+    const fromDom = input?.files?.[0] || null;
+    if (fromDom) {
+      setFile(fromDom);
+      return fromDom;
+    }
+    return file;
+  }
+
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -60,9 +107,10 @@ export default function AdminPostsPage() {
           setBusy(false);
           return;
         }
+        const selected = resolveSelectedFile(coverInputRef.current);
         let imageUrl = "";
-        if (file) {
-          const uploaded = await uploadFile(file);
+        if (selected) {
+          const uploaded = await uploadFile(selected);
           imageUrl = uploaded.url;
         }
         const res = await fetch("/api/posts", {
@@ -79,12 +127,13 @@ export default function AdminPostsPage() {
           throw new Error(data.error || t.saveFailed);
         }
       } else {
-        if (!file) {
+        const selected = resolveSelectedFile(fileInputRef.current);
+        if (!selected || selected.size <= 0) {
           setError(t.chooseMedia);
           setBusy(false);
           return;
         }
-        const uploaded = await uploadFile(file);
+        const uploaded = await uploadFile(selected);
         const res = await fetch("/api/posts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -101,6 +150,8 @@ export default function AdminPostsPage() {
       }
       setCaption("");
       setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (coverInputRef.current) coverInputRef.current.value = "";
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.saveFailed);
@@ -132,6 +183,14 @@ export default function AdminPostsPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function switchKind(next: PublishKind) {
+    setKind(next);
+    setFile(null);
+    setError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (coverInputRef.current) coverInputRef.current.value = "";
   }
 
   return (
@@ -166,7 +225,7 @@ export default function AdminPostsPage() {
                 type="radio"
                 name="publishKind"
                 checked={kind === "media"}
-                onChange={() => setKind("media")}
+                onChange={() => switchKind("media")}
               />
               {t.publishKindMedia}
             </label>
@@ -175,7 +234,7 @@ export default function AdminPostsPage() {
                 type="radio"
                 name="publishKind"
                 checked={kind === "text"}
-                onChange={() => setKind("text")}
+                onChange={() => switchKind("text")}
               />
               {t.publishKindText}
             </label>
@@ -186,12 +245,21 @@ export default function AdminPostsPage() {
               <label>
                 {t.mediaFile}
                 <input
+                  ref={fileInputRef}
                   type="file"
-                  accept="image/*,video/mp4,video/webm,video/quicktime"
+                  accept="image/*,video/mp4,video/webm,video/quicktime,video/*"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  required
                 />
               </label>
+              {file ? (
+                <p className="lede" style={{ marginTop: "-0.35rem" }}>
+                  ✓ {file.name} (
+                  {file.size >= 1024 * 1024
+                    ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                    : `${Math.max(1, Math.round(file.size / 1024))} KB`}
+                  )
+                </p>
+              ) : null}
               <p className="lede" style={{ marginTop: "-0.35rem" }}>
                 {t.mediaHelp}
               </p>
@@ -224,6 +292,7 @@ export default function AdminPostsPage() {
               <label>
                 {t.articleCoverOptional}
                 <input
+                  ref={coverInputRef}
                   type="file"
                   accept="image/*"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -232,7 +301,7 @@ export default function AdminPostsPage() {
             </>
           )}
 
-          {error && <p className="hint">{error}</p>}
+          {error ? <p className="hint">{error}</p> : null}
           <button className="btn btn-primary" type="submit" disabled={busy}>
             {busy ? t.publishing : t.publish}
           </button>
